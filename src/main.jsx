@@ -1,6 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-
+import AdminContentPages from "./pages/AdminContentPages.jsx";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 
 import PublicLayout from "./components/PublicLayout.jsx";
@@ -31,6 +31,7 @@ function App() {
           <Route path="banners" element={<AdminBanners />} />
 
           <Route path="news" element={<AdminNews />} />
+          <Route path="content-pages" element={<AdminContentPages />} />
 
           <Route path="settings" element={<AdminSettings />} />
 
@@ -60,4 +61,3 @@ createRoot(document.getElementById("root")).render(
     <App />
   </React.StrictMode>,
 );
-    

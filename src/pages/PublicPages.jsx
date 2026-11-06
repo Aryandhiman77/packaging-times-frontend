@@ -8,25 +8,44 @@ import { api, friendlyDate } from "../lib/api.js";
 
 import Seo from "../components/Seo.jsx";
 
+import CategoryContent from "../components/CategoryContent.jsx";
+
 export function PublicContent({ page, news, settings }) {
   if (page === "home") {
     return <Home news={news} settings={settings} />;
   }
 
   if (page === "flexibles") {
-    return <StoryIndex news={news} category="Flexibles" />;
+    return (
+      <CategoryContent
+        category="flexibles"
+        fallback={<StoryIndex news={news} category="Flexibles" />}
+      />
+    );
   }
 
   if (page === "rigid") {
-    return <StoryIndex news={news} category="Rigid" />;
+    return (
+      <CategoryContent
+        category="rigid"
+        fallback={<StoryIndex news={news} category="Rigid" />}
+      />
+    );
   }
 
   if (page === "trends") {
-    return <StoryIndex news={news} category="Trends" />;
+    return (
+      <CategoryContent
+        category="trends"
+        fallback={<StoryIndex news={news} category="Trends" />}
+      />
+    );
   }
 
   if (page === "advertising") {
-    return <Advertising />;
+    return (
+      <CategoryContent category="advertising" fallback={<Advertising />} />
+    );
   }
 
   if (page === "subscribe") {
@@ -83,8 +102,7 @@ function Home({ news, settings }) {
           <p className="news-empty-title">Packaging News & Supplier Guide</p>
 
           <p className="news-empty-sub">
-            Fresh packaging updates will appear here as you publish them from
-            the admin panel.
+            Explore packaging stories and industry news.
           </p>
         </div>
       )}
@@ -119,7 +137,7 @@ function StoryIndex({ news, category }) {
       {stories.length ? (
         <StoryList stories={stories} />
       ) : (
-        <div className="empty-state">No articles published yet.</div>
+        <div className="empty-state">Explore packaging news and ideas.</div>
       )}
     </div>
   );
@@ -352,18 +370,21 @@ function SimpleForm({ kind }) {
     setFeedback({ text: "", error: false });
 
     try {
-      const result = await api(subscribe ? "/public/subscribe" : "/public/contact", {
-        method: "POST",
+      const result = await api(
+        subscribe ? "/public/subscribe" : "/public/contact",
+        {
+          method: "POST",
 
-        body: JSON.stringify(
-          subscribe
-            ? {
-                name: form.name,
-                email: form.email,
-              }
-            : form,
-        ),
-      });
+          body: JSON.stringify(
+            subscribe
+              ? {
+                  name: form.name,
+                  email: form.email,
+                }
+              : form,
+          ),
+        },
+      );
 
       setFeedback({
         error: false,

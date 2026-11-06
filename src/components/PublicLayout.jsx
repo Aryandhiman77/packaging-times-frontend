@@ -298,11 +298,6 @@ export default function PublicLayout() {
               ))}
             </div>
           )}
-          {offline && (
-            <p className="backend-warning" role="status">
-              Backend offline. Run the server and MongoDB to load live updates.
-            </p>
-          )}
         </section>
         <AdColumn side="right" banners={banners} />
       </main>

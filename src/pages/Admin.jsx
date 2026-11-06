@@ -157,6 +157,7 @@ const navigation = [
   ["", "Overview", LayoutDashboard],
   ["banners", "Ad Banners", ImageIcon],
   ["news", "News & Articles", Newspaper],
+  ["content-pages", "Category Story Pages", Newspaper],
   ["settings", "Website Settings", Settings],
   ["subscribers", "Subscribers", Users],
   ["messages", "Contact Messages", Mail],
