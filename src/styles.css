@@ -2311,7 +2311,7 @@ select:focus-visible {
 
 .category-story-body {
   font-size: 13px;
-  line-height: 1.58;
+  line-height: 1.35;
   overflow-wrap: anywhere;
   color: #202830;
 }
@@ -2324,15 +2324,15 @@ select:focus-visible {
 }
 
 .category-story-body p {
-  margin: 0 0 12px;
+  margin: 0 0 6px;
 }
 
 .category-story-body h1,
 .category-story-body h2,
 .category-story-body h3 {
   font-weight: 700;
-  line-height: 1.28;
-  margin: 12px 0 9px;
+  line-height: 1.2;
+  margin: 10px 0 6px;
 }
 
 .category-story-body h1 {
@@ -2581,14 +2581,18 @@ select:focus-visible {
   margin: 5px 0 13px;
 }
 
-.category-ckeditor .ck-editor__editable_inline {
-  min-height: 270px;
-  max-height: 650px;
-  overflow-y: auto;
+.category-tinymce .tox-tinymce {
+  border-color: #cbd5e1;
+  border-radius: 7px;
 }
 
-.category-ckeditor .ck.ck-toolbar {
-  border-color: #cbd5e1;
+.category-tinymce .tox .tox-editor-header {
+  border-bottom: 1px solid #dbe3ea;
+  box-shadow: none;
+}
+
+.category-tinymce .tox .tox-statusbar {
+  border-top-color: #dbe3ea;
 }
 
 .category-seo-fields {

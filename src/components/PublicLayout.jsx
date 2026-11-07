@@ -235,7 +235,19 @@ export default function PublicLayout() {
   useEffect(() => {
     let active = true;
     setLoading(true);
-    Promise.all([api(`/public/banners?page=${slug}`), api("/public/news")])
+    setBanners({});
+
+    const selectedContentPage = new URLSearchParams(search).get("page") || "";
+    const bannerQuery = new URLSearchParams({ page: slug });
+
+    if (selectedContentPage) {
+      bannerQuery.set("contentPage", selectedContentPage);
+    }
+
+    Promise.all([
+      api(`/public/banners?${bannerQuery.toString()}`),
+      api("/public/news"),
+    ])
       .then(([ads, articles]) => {
         if (active) {
           setBanners(ads || {});
@@ -253,7 +265,7 @@ export default function PublicLayout() {
         if (active) setLoading(false);
       });
     return () => (active = false);
-  }, [slug]);
+  }, [slug, search]);
   return (
     <>
       <Header settings={settings} />

@@ -1,38 +1,26 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Editor as TinyMCEEditor } from "@tinymce/tinymce-react";
 
-import {
-  ClassicEditor,
-  Essentials,
-  Paragraph,
-  Heading,
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  Link,
-  List,
-  BlockQuote,
-  Table,
-  TableToolbar,
-  Image,
-  ImageUpload,
-  ImageToolbar,
-  ImageCaption,
-  ImageStyle,
-  ImageResize,
-  SourceEditing,
-  GeneralHtmlSupport,
-  FontColor,
-  FontBackgroundColor,
-  FontSize,
-  Alignment,
-  Undo,
-  Autoformat,
-  FileRepository,
-} from "ckeditor5";
+import "tinymce/tinymce";
+import "tinymce/icons/default";
+import "tinymce/themes/silver";
+import "tinymce/models/dom";
+import "tinymce/plugins/advlist";
+import "tinymce/plugins/autolink";
+import "tinymce/plugins/charmap";
+import "tinymce/plugins/code";
+import "tinymce/plugins/fullscreen";
+import "tinymce/plugins/image";
+import "tinymce/plugins/link";
+import "tinymce/plugins/lists";
+import "tinymce/plugins/searchreplace";
+import "tinymce/plugins/table";
+import "tinymce/plugins/visualblocks";
+import "tinymce/plugins/wordcount";
+import "tinymce/skins/ui/oxide/skin.min.css";
 
-import "ckeditor5/ckeditor5.css";
+import contentSkinCss from "tinymce/skins/content/default/content.min.css?inline";
+import contentUiCss from "tinymce/skins/ui/oxide/content.min.css?inline";
 
 import { Plus, Save, Pencil, Trash2, Search, FileText } from "lucide-react";
 
@@ -58,142 +46,125 @@ const empty = (category, order = 1) => ({
   slug: "",
   html: "<p></p>",
   order,
-  status: "draft",
+  status: "published",
   metaTitle: "",
   metaDescription: "",
   seoImage: "",
   robots: "index,follow",
 });
 
-function UploadPlugin(editor) {
-  editor.plugins.get("FileRepository").createUploadAdapter = (loader) => ({
-    upload: async () => {
-      const file = await loader.file;
+async function uploadEditorImage(blobInfo, progress) {
+  const blob = blobInfo.blob();
 
-      if (!file || file.size > maxImageSize) {
-        throw new Error("Image must be 10MB or smaller.");
-      }
+  if (!blob || blob.size > maxImageSize) {
+    throw new Error("Image must be 10MB or smaller.");
+  }
 
-      const body = new FormData();
-      body.append("image", file);
+  progress(15);
 
-      const uploaded = await api("/admin/content-images", {
-        method: "POST",
-        body,
-      });
+  const body = new FormData();
+  body.append("image", blob, blobInfo.filename());
 
-      return { default: uploaded.url };
-    },
-
-    abort: () => {},
+  const uploaded = await api("/admin/content-images", {
+    method: "POST",
+    body,
   });
+
+  progress(100);
+  return uploaded.url;
 }
 
-const plugins = [
-  Essentials,
-  Paragraph,
-  Heading,
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  Link,
-  List,
-  BlockQuote,
-  Table,
-  TableToolbar,
-  Image,
-  ImageUpload,
-  ImageToolbar,
-  ImageCaption,
-  ImageStyle,
-  ImageResize,
-  SourceEditing,
-  GeneralHtmlSupport,
-  FontColor,
-  FontBackgroundColor,
-  FontSize,
-  Alignment,
-  Undo,
-  Autoformat,
-  FileRepository,
-];
+const editorConfig = {
+  license_key: "gpl",
+  height: 520,
+  min_height: 360,
+  resize: true,
+  menubar: "edit insert format table tools view",
+  statusbar: true,
+  branding: false,
+  promotion: false,
+  skin: false,
+  content_css: false,
+  content_style: `${contentUiCss}\n${contentSkinCss}\n
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 14px;
+      line-height: 1.35;
+      margin: 16px;
+    }
+    p { margin: 0 0 7px; }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.2; margin: 12px 0 7px; }
+    img { max-width: 100%; height: auto; }
+  `,
+  plugins: [
+    "advlist",
+    "autolink",
+    "charmap",
+    "code",
+    "fullscreen",
+    "image",
+    "link",
+    "lists",
+    "searchreplace",
+    "table",
+    "visualblocks",
+    "wordcount",
+  ],
+  toolbar:
+    "undo redo | blocks | fontsizeinput fontsize lineheight | " +
+    "bold italic underline strikethrough | forecolor backcolor | " +
+    "alignleft aligncenter alignright alignjustify | bullist numlist | " +
+    "link image table blockquote | removeformat code fullscreen",
+  toolbar_mode: "sliding",
+  font_size_input_default_unit: "px",
+  font_size_formats:
+    "8px 9px 10px 11px 12px 13px 14px 15px 16px 18px 20px 22px " +
+    "24px 28px 32px 36px 42px 48px 56px 64px 72px",
+  line_height_formats: "1 1.1 1.2 1.3 1.35 1.4 1.5 1.6 1.8 2",
+  block_formats:
+    "Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; " +
+    "Heading 4=h4; Heading 5=h5; Heading 6=h6; Preformatted=pre",
+  automatic_uploads: true,
+  paste_data_images: true,
+  images_file_types: "jpg,jpeg,png,gif,webp",
+  images_upload_handler: uploadEditorImage,
+  image_caption: true,
+  image_advtab: true,
+  link_default_target: "_blank",
+  link_assume_external_targets: "https",
+  table_responsive_width: true,
+};
 
-function RichEditor({ value, onChange }) {
+function RichEditor({ value, onChange, onInit }) {
+  const [error, setError] = useState("");
+
   return (
-    <div className="category-ckeditor">
-      <CKEditor
-        editor={ClassicEditor}
-        data={value}
-        config={{
-          licenseKey: import.meta.env.VITE_CKEDITOR_LICENSE_KEY || "GPL",
-
-          plugins,
-          extraPlugins: [UploadPlugin],
-
-          toolbar: {
-            items: [
-              "undo",
-              "redo",
-              "|",
-              "sourceEditing",
-              "heading",
-              "|",
-              "bold",
-              "italic",
-              "underline",
-              "strikethrough",
-              "|",
-              "fontSize",
-              "fontColor",
-              "fontBackgroundColor",
-              "|",
-              "alignment",
-              "bulletedList",
-              "numberedList",
-              "|",
-              "link",
-              "uploadImage",
-              "insertTable",
-              "blockQuote",
-            ],
-            shouldNotGroupWhenFull: false,
-          },
-
-          image: {
-            toolbar: [
-              "imageTextAlternative",
-              "toggleImageCaption",
-              "imageStyle:inline",
-              "imageStyle:block",
-              "imageStyle:side",
-              "resizeImage",
-            ],
-          },
-
-          table: {
-            contentToolbar: ["tableColumn", "tableRow", "mergeTableCells"],
-          },
-
-          htmlSupport: {
-            allow: [
-              {
-                name: /^(p|div|span|h[1-6]|ul|ol|li|strong|em|u|s|blockquote|a|img|table|thead|tbody|tr|td|th|figure|figcaption)$/,
-                attributes: true,
-                classes: true,
-                styles: true,
-              },
-            ],
-          },
+    <div className="category-tinymce">
+      <TinyMCEEditor
+        value={value}
+        disabled={false}
+        init={editorConfig}
+        onInit={(_event, editor) => {
+          setError("");
+          onInit(editor);
         }}
-        onChange={(_event, editor) => onChange(editor.getData())}
+        onEditorChange={onChange}
+        onScriptsLoadError={(loadError) => {
+          setError(loadError?.message || "TinyMCE could not be initialized.");
+        }}
       />
+      {error && (
+        <p className="admin-error" role="alert">
+          TinyMCE error: {error}
+        </p>
+      )}
     </div>
   );
 }
 
 function EditorForm({ initial, category, onSaved, onCancel }) {
   const [form, setForm] = useState(() => initial || empty(category));
+  const editorRef = useRef(null);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -222,9 +193,13 @@ function EditorForm({ initial, category, onSaved, onCancel }) {
     setSaving(true);
 
     try {
+      await editorRef.current?.uploadImages();
+
+      const currentHtml = editorRef.current?.getContent() || form.html;
       const payload = {
         ...form,
         category,
+        html: currentHtml,
       };
 
       if (!payload.slug) {
@@ -235,8 +210,8 @@ function EditorForm({ initial, category, onSaved, onCancel }) {
         throw new Error("Enter a page title and slug.");
       }
 
-      const text = form.html.replace(/<[^>]+>/g, "").trim();
-      const hasImage = /<img\b/i.test(form.html);
+      const text = payload.html.replace(/<[^>]+>/g, "").trim();
+      const hasImage = /<img\b/i.test(payload.html);
 
       if (!text && !hasImage) {
         throw new Error("Add content before saving.");
@@ -316,14 +291,17 @@ function EditorForm({ initial, category, onSaved, onCancel }) {
       <h4>Page content</h4>
 
       <p className="category-editor-note">
-        Add formatted text, colors, images and HTML source. Every saved record
-        is one website page.
+        Use pixel font sizes, compact line-height options, colors, images and
+        HTML source. Every saved record is one website page.
       </p>
 
       <RichEditor
         key={initial?._id || `new-${category}`}
         value={form.html}
         onChange={(value) => set("html", value)}
+        onInit={(editor) => {
+          editorRef.current = editor;
+        }}
       />
 
       <div className="category-seo-fields">

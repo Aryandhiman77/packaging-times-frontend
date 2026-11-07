@@ -419,6 +419,7 @@ const newBanner = {
   title: "",
   altText: "",
   page: "home",
+  contentPage: "",
   slot: "left-1",
   targetUrl: "",
   priority: "0",
@@ -426,6 +427,12 @@ const newBanner = {
   startsAt: "",
   endsAt: "",
 };
+const contentPageCategories = new Set([
+  "trends",
+  "flexibles",
+  "rigid",
+  "advertising",
+]);
 const bannerInputStyles = "admin-control";
 const datestr = (v) => (v ? new Date(v).toISOString().slice(0, 10) : "");
 function BannerModal({ initial, onClose, onSaved }) {
@@ -442,6 +449,43 @@ function BannerModal({ initial, onClose, onSaved }) {
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState("");
+  const [contentPages, setContentPages] = useState([]);
+  const [contentPagesLoading, setContentPagesLoading] = useState(false);
+  const [contentPagesError, setContentPagesError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    if (!contentPageCategories.has(form.page)) {
+      setContentPages([]);
+      setContentPagesError("");
+      return () => {
+        active = false;
+      };
+    }
+
+    setContentPagesLoading(true);
+    setContentPagesError("");
+
+    api(`/admin/content-page-options/${form.page}`)
+      .then((items) => {
+        if (active) setContentPages(items || []);
+      })
+      .catch((err) => {
+        if (active) {
+          setContentPages([]);
+          setContentPagesError(err.message);
+        }
+      })
+      .finally(() => {
+        if (active) setContentPagesLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [form.page]);
+
   useEffect(() => {
     if (!file) {
       setPreview("");
@@ -472,6 +516,7 @@ function BannerModal({ initial, onClose, onSaved }) {
         "title",
         "altText",
         "page",
+        "contentPage",
         "slot",
         "targetUrl",
         "priority",
@@ -527,7 +572,13 @@ function BannerModal({ initial, onClose, onSaved }) {
             <select
               className={bannerInputStyles}
               value={form.page}
-              onChange={(e) => set("page", e.target.value)}
+              onChange={(e) =>
+                setForm((current) => ({
+                  ...current,
+                  page: e.target.value,
+                  contentPage: "",
+                }))
+              }
             >
               <option value="global">All pages (global)</option>
               {pages.map((p) => (
@@ -537,6 +588,35 @@ function BannerModal({ initial, onClose, onSaved }) {
               ))}
             </select>
           </label>
+          {contentPageCategories.has(form.page) && (
+            <label>
+              Category Content Page
+              <select
+                className={bannerInputStyles}
+                value={form.contentPage || ""}
+                disabled={contentPagesLoading}
+                onChange={(e) => set("contentPage", e.target.value)}
+              >
+                <option value="">
+                  {contentPagesLoading
+                    ? "Loading content pages..."
+                    : `All ${form.page} pages (category fallback)`}
+                </option>
+                {contentPages.map((item) => (
+                  <option key={item._id} value={item._id}>
+                    #{item.order} {item.title} ({item.status})
+                  </option>
+                ))}
+              </select>
+              <small>
+                Select one saved content page to give it independent ad
+                positions.
+              </small>
+              {contentPagesError && (
+                <small className="admin-error">{contentPagesError}</small>
+              )}
+            </label>
+          )}
           <label>
             Ad Position *
             <select
@@ -792,6 +872,11 @@ export function AdminBanners() {
               <div className="banner-admin-info">
                 <div className="banner-meta">
                   <span>{item.page}</span>
+                  <span>
+                    {item.contentPageInfo
+                      ? `#${item.contentPageInfo.order} ${item.contentPageInfo.title}`
+                      : "page default"}
+                  </span>
                   <span>{item.slot}</span>
                   <span
                     className={`${item.lifecycleStatus || "inactive"}-dot`}
