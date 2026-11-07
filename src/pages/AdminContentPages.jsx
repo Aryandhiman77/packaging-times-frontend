@@ -93,7 +93,18 @@ const editorConfig = {
       margin: 16px;
     }
     p { margin: 0 0 7px; }
-    h1, h2, h3, h4, h5, h6 { line-height: 1.2; margin: 12px 0 7px; }
+    h1, h2, h3, h4, h5, h6 {
+      font-family: Arial, Helvetica, sans-serif;
+      font-weight: 700;
+      line-height: 1.2;
+      margin: 12px 0 7px;
+    }
+    h1 { font-size: 24px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 17px; }
+    h4 { font-size: 15px; }
+    h5 { font-size: 14px; }
+    h6 { font-size: 13px; }
     img { max-width: 100%; height: auto; }
   `,
   plugins: [
@@ -111,11 +122,20 @@ const editorConfig = {
     "wordcount",
   ],
   toolbar:
-    "undo redo | blocks | fontsizeinput fontsize lineheight | " +
+    "undo redo | blocks fontfamily | fontsizeinput lineheight | " +
     "bold italic underline strikethrough | forecolor backcolor | " +
     "alignleft aligncenter alignright alignjustify | bullist numlist | " +
     "link image table blockquote | removeformat code fullscreen",
   toolbar_mode: "sliding",
+  default_font_stack: ["Arial", "Helvetica", "sans-serif"],
+  font_family_formats:
+    "Arial=Arial,Helvetica,sans-serif; " +
+    "Helvetica=Helvetica,Arial,sans-serif; " +
+    "Georgia=Georgia,serif; Tahoma=Tahoma,Arial,sans-serif; " +
+    "Times New Roman=Times New Roman,Times,serif; " +
+    "Trebuchet MS=Trebuchet MS,Arial,sans-serif; " +
+    "Verdana=Verdana,Arial,sans-serif; " +
+    "Courier New=Courier New,Courier,monospace",
   font_size_input_default_unit: "px",
   font_size_formats:
     "8px 9px 10px 11px 12px 13px 14px 15px 16px 18px 20px 22px " +

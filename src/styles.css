@@ -100,8 +100,8 @@ select:focus-visible {
   transform-origin: center top;
 }
 @font-face {
-  font-family: "Old English Text MT Local";
-  src: local("Old English Text MT"), local("Old English Text MT Regular");
+  font-family: "Cloister Black Web";
+  src: url("./assets/fonts/CloisterBlack.ttf") format("truetype");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -122,8 +122,7 @@ select:focus-visible {
 }
 .brand-wordmark {
   font-family:
-    "Old English Text MT Local", "Old English Text MT",
-    "Old English Text MT Regular", serif;
+    "Cloister Black Web", "Cloister Black", "Old English Text MT", serif;
   font-size: min(106px, 6.35vw);
   font-weight: 400;
   line-height: 0.9;
@@ -2329,18 +2328,40 @@ select:focus-visible {
 
 .category-story-body h1,
 .category-story-body h2,
-.category-story-body h3 {
+.category-story-body h3,
+.category-story-body h4,
+.category-story-body h5,
+.category-story-body h6 {
+  font-family: Arial, Helvetica, sans-serif;
   font-weight: 700;
   line-height: 1.2;
+  letter-spacing: normal;
+  text-transform: none;
   margin: 10px 0 6px;
 }
 
 .category-story-body h1 {
-  font-size: 20px;
+  font-size: 24px;
 }
 
 .category-story-body h2 {
+  font-size: 20px;
+}
+
+.category-story-body h3 {
   font-size: 17px;
+}
+
+.category-story-body h4 {
+  font-size: 15px;
+}
+
+.category-story-body h5 {
+  font-size: 14px;
+}
+
+.category-story-body h6 {
+  font-size: 13px;
 }
 
 .category-story-body img {

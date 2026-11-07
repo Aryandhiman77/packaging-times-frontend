@@ -74,8 +74,16 @@ export function assetUrl(url) {
 
   if (/^https?:\/\//i.test(url)) return url;
 
+  const apiOrigin = root.replace(/\/api$/, "");
+
+  if (url.startsWith("/api/uploads/")) {
+    return apiOrigin + url;
+  }
+
+  // Existing MongoDB records use /uploads/*. Route them through /api so the
+  // production reverse proxy reaches Express instead of returning the SPA.
   if (url.startsWith("/uploads/")) {
-    return root.replace(/\/api$/, "") + url;
+    return `${apiOrigin}/api${url}`;
   }
 
   return url;
