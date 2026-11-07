@@ -97,20 +97,45 @@ function Header({ settings }) {
     </header>
   );
 }
-function AdPosition({ banner, slot }) {
+function AdPosition({ banner, slot, loading = false }) {
+  const [imageReady, setImageReady] = useState(false);
+
+  useEffect(() => {
+    setImageReady(false);
+  }, [banner?._id, banner?.imageUrl]);
+
+  if (loading) {
+    return (
+      <div
+        className="ad-filled ad-is-loading"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        aria-label={`Loading ${slot} advertisement`}
+      >
+        <div className="ad-skeleton-surface" aria-hidden="true" />
+      </div>
+    );
+  }
+
   if (!banner) {
     return <div className="ad-empty" aria-hidden="true" />;
   }
   const img = (
     <img
-      className="ad-image"
+      className={`ad-image ${imageReady ? "is-ready" : ""}`}
       src={assetUrl(banner.imageUrl)}
       alt={banner.altText || banner.title}
       loading="lazy"
+      onLoad={() => setImageReady(true)}
+      onError={() => setImageReady(true)}
     />
   );
   return (
-    <div className="ad-filled">
+    <div className={`ad-filled ${imageReady ? "" : "ad-is-loading"}`}>
+      {!imageReady && (
+        <div className="ad-skeleton-surface" aria-hidden="true" />
+      )}
       {banner.targetUrl ? (
         <a
           href={banner.targetUrl}
@@ -126,7 +151,7 @@ function AdPosition({ banner, slot }) {
     </div>
   );
 }
-function AdColumn({ side, banners }) {
+function AdColumn({ side, banners, loading = false }) {
   return (
     <aside
       className={`ad-column ${side}`}
@@ -134,7 +159,14 @@ function AdColumn({ side, banners }) {
     >
       {Array.from({ length: 4 }, (_, i) => {
         const slot = `${side}-${i + 1}`;
-        return <AdPosition key={slot} slot={slot} banner={banners[slot]} />;
+        return (
+          <AdPosition
+            key={slot}
+            slot={slot}
+            banner={banners[slot]}
+            loading={loading}
+          />
+        );
       })}
     </aside>
   );
@@ -218,6 +250,7 @@ export default function PublicLayout() {
   const slug = pageFromPath(pathname);
   const [settings, setSettings] = useState(defaults),
     [banners, setBanners] = useState({}),
+    [bannersLoading, setBannersLoading] = useState(true),
     [news, setNews] = useState([]),
     [offline, setOffline] = useState(false),
     [loading, setLoading] = useState(true);
@@ -235,6 +268,7 @@ export default function PublicLayout() {
   useEffect(() => {
     let active = true;
     setLoading(true);
+    setBannersLoading(true);
     setBanners({});
 
     const selectedContentPage = new URLSearchParams(search).get("page") || "";
@@ -244,14 +278,10 @@ export default function PublicLayout() {
       bannerQuery.set("contentPage", selectedContentPage);
     }
 
-    Promise.all([
-      api(`/public/banners?${bannerQuery.toString()}`),
-      api("/public/news"),
-    ])
-      .then(([ads, articles]) => {
+    api(`/public/banners?${bannerQuery.toString()}`)
+      .then((ads) => {
         if (active) {
           setBanners(ads || {});
-          setNews(articles || []);
           setOffline(false);
         }
       })
@@ -262,6 +292,20 @@ export default function PublicLayout() {
         }
       })
       .finally(() => {
+        if (active) setBannersLoading(false);
+      });
+
+    api("/public/news")
+      .then((articles) => {
+        if (active) {
+          setNews(articles || []);
+          setOffline(false);
+        }
+      })
+      .catch(() => {
+        if (active) setOffline(true);
+      })
+      .finally(() => {
         if (active) setLoading(false);
       });
     return () => (active = false);
@@ -270,7 +314,7 @@ export default function PublicLayout() {
     <>
       <Header settings={settings} />
       <main className="site-grid">
-        <AdColumn side="left" banners={banners} />
+        <AdColumn side="left" banners={banners} loading={bannersLoading} />
         <section className="page-middle" aria-label="Main content">
           {pathname.startsWith("/story/") ? (
             <StoryPage />
@@ -311,7 +355,7 @@ export default function PublicLayout() {
             </div>
           )}
         </section>
-        <AdColumn side="right" banners={banners} />
+        <AdColumn side="right" banners={banners} loading={bannersLoading} />
       </main>
       <Footer settings={settings} />
     </>
