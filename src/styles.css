@@ -325,12 +325,7 @@ select:focus-visible {
   position: absolute;
   inset: 10px;
   border-radius: 8px;
-  background: linear-gradient(
-    90deg,
-    #e7edf2 20%,
-    #f8fafb 38%,
-    #e7edf2 56%
-  );
+  background: linear-gradient(90deg, #e7edf2 20%, #f8fafb 38%, #e7edf2 56%);
   background-size: 220% 100%;
   animation: skeleton-shimmer 1.35s ease-in-out infinite;
   pointer-events: none;
@@ -2467,12 +2462,7 @@ select:focus-visible {
 .category-skeleton-block {
   height: 11px;
   border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    #e7edf2 20%,
-    #f6f8fa 38%,
-    #e7edf2 56%
-  );
+  background: linear-gradient(90deg, #e7edf2 20%, #f6f8fa 38%, #e7edf2 56%);
   background-size: 220% 100%;
   animation: skeleton-shimmer 1.35s ease-in-out infinite;
 }
@@ -3653,5 +3643,103 @@ select:focus-visible {
     white-space: normal;
     padding-inline: 3px;
     transform: none;
+  }
+}
+
+/* ============================================
+   PACKAGING TIMES
+   AD SPACING + TABLET WIDTH FIX
+   ============================================ */
+
+/* Remove fixed-height advertisement slots */
+
+.site-grid .ad-column {
+  grid-template-rows: none;
+  grid-auto-rows: max-content;
+  align-content: start;
+  row-gap: 8px;
+}
+
+/* Do not reserve empty space for missing ads */
+
+.site-grid .ad-column .ad-empty {
+  display: none;
+}
+
+/* Let advertisements use their natural height */
+
+.site-grid .ad-column .ad-filled {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+}
+
+/* Fix ad links */
+
+.site-grid .ad-column .ad-filled > a {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Remove vertical letterboxing around images */
+
+.site-grid .ad-column .ad-filled .ad-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  object-fit: contain;
+}
+
+/* ============================================
+   TABLET / SMALL DESKTOP
+   761px - 1150px
+   ============================================ */
+
+@media (min-width: 761px) and (max-width: 1150px) {
+  /* Give more width to both ad columns */
+
+  .site-grid:not(.document-layout) {
+    grid-template-columns:
+      minmax(0, 23.5%)
+      minmax(0, 1fr)
+      minmax(0, 23.5%);
+
+    min-height: 0;
+  }
+
+  /* Center article becomes slightly narrower */
+
+  .site-grid:not(.document-layout) .page-middle {
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* Keep advertisement rows compact */
+
+  .site-grid .ad-column {
+    row-gap: 8px;
+  }
+
+  .site-grid .ad-column .ad-filled {
+    min-height: 0;
+    height: auto;
+  }
+}
+
+/* Small mobile spacing */
+
+@media (max-width: 760px) {
+  .site-grid .ad-column {
+    row-gap: 8px;
+  }
+
+  .site-grid .ad-column .ad-filled {
+    height: auto;
+    min-height: 0;
   }
 }
