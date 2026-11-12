@@ -289,6 +289,12 @@ function Footer({ settings }) {
             </span>
             Contact Us
           </Link>
+          <Link to="/contact-us">
+            <span className="footer-bullet" aria-hidden="true">
+              •
+            </span>
+            Shopping Cart
+          </Link>
         </nav>
         <Brand settings={settings} footer />
         <address className="footer-contact">

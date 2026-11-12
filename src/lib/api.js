@@ -129,7 +129,7 @@ export const pages = [
     slug: "shopping-cart",
     label: "Shopping Cart",
     path: "/shopping-cart",
-    hidden: true,
+    hidden: false,
   },
   {
     slug: "subscription-thanks",
