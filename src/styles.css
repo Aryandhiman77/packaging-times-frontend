@@ -3222,6 +3222,12 @@ select:focus-visible {
   font-weight: 700;
 }
 
+.subscription-success {
+  margin: 4px 0 18px;
+  color: #166534;
+  font-weight: 700;
+}
+
 .subscription-lookup-status {
   margin: 4px 0 0;
   color: #166534;

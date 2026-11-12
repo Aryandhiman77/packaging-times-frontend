@@ -9,7 +9,7 @@ import { api, friendlyDate } from "../lib/api.js";
 import Seo from "../components/Seo.jsx";
 
 import CategoryContent from "../components/CategoryContent.jsx";
-import { PageSkeleton } from "../components/Skeletons.jsx";
+import { InlineSkeleton, PageSkeleton } from "../components/Skeletons.jsx";
 import {
   ManageSubscription,
   PackagingBrief,
@@ -361,9 +361,10 @@ function Advertising() {
         </label>
 
         <button className="blue-btn" disabled={busy}>
-          {busy ? "Sending..." : "Send Advertising Enquiry"}
-
-          <ArrowRight size={16} />
+          {busy ? <InlineSkeleton width="150px" /> : <>
+            Send Advertising Enquiry
+            <ArrowRight size={16} />
+          </>}
         </button>
 
         {status && (
@@ -510,9 +511,10 @@ function SimpleForm({ kind }) {
       )}
 
       <button className="blue-btn" disabled={busy}>
-        {busy ? "Submitting..." : subscribe ? "Subscribe Free" : "Send Message"}
-
-        <ArrowRight size={16} />
+        {busy ? <InlineSkeleton width="120px" /> : <>
+          {subscribe ? "Subscribe Free" : "Send Message"}
+          <ArrowRight size={16} />
+        </>}
       </button>
 
       {feedback.text && (

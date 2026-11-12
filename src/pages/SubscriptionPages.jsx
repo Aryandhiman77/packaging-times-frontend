@@ -84,6 +84,19 @@ function ActionButton({ children, busy, disabled, ...props }) {
   );
 }
 
+function ActionFeedback({ feedback, action }) {
+  if (feedback.action !== action || !feedback.text) return null;
+
+  return (
+    <p
+      className={feedback.error ? "subscription-error" : "subscription-success"}
+      role={feedback.error ? "alert" : "status"}
+    >
+      {feedback.text}
+    </p>
+  );
+}
+
 export function SubscriptionSignup() {
   const [form, setForm] = useState(emptyProfile);
   const [busy, setBusy] = useState(false);
@@ -156,8 +169,8 @@ export function ManageSubscription() {
   const [found, setFound] = useState(false);
   const [busy, setBusy] = useState("");
   const [lookupMessage, setLookupMessage] = useState("");
-  const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const [feedback, setFeedback] = useState({ action: "", text: "", error: false });
   const [emailForm, setEmailForm] = useState({ currentEmail: "", newEmail: "", confirmEmail: "" });
   const [remove, setRemove] = useState(false);
   const set = (key, value) => setProfile((current) => ({ ...current, [key]: value }));
@@ -169,8 +182,8 @@ export function ManageSubscription() {
       setProfile(emptyProfile);
       setEmailForm({ currentEmail: "", newEmail: "", confirmEmail: "" });
       setLookupMessage("");
-      setNotice("");
       setError("");
+      setFeedback({ action: "", text: "", error: false });
       setRemove(false);
     }
   }
@@ -178,7 +191,7 @@ export function ManageSubscription() {
   function begin(action) {
     setBusy(action);
     setError("");
-    setNotice("");
+    setFeedback({ action: "", text: "", error: false });
   }
 
   async function find(event) {
@@ -220,9 +233,13 @@ export function ManageSubscription() {
         method: "PATCH",
         body: JSON.stringify(profile),
       });
-      setNotice("YOUR SUBSCRIPTION HAS BEEN UPDATED");
+      setFeedback({
+        action: "save",
+        text: "Your subscription information and preferences have been updated successfully.",
+        error: false,
+      });
     } catch (err) {
-      setError(err.message);
+      setFeedback({ action: "save", text: err.message, error: true });
     } finally {
       setBusy("");
     }
@@ -240,9 +257,13 @@ export function ManageSubscription() {
       setLookupEmail(updated);
       setProfile((current) => ({ ...current, email: updated }));
       setEmailForm({ currentEmail: updated, newEmail: "", confirmEmail: "" });
-      setNotice("YOUR E-MAIL ADDRESS HAS BEEN UPDATED");
+      setFeedback({
+        action: "email",
+        text: "Your e-mail address has been updated successfully.",
+        error: false,
+      });
     } catch (err) {
-      setError(err.message);
+      setFeedback({ action: "email", text: err.message, error: true });
     } finally {
       setBusy("");
     }
@@ -256,10 +277,14 @@ export function ManageSubscription() {
         method: "POST",
         body: JSON.stringify({ email: profile.email, confirm: remove }),
       });
-      setNotice("YOU HAVE BEEN UNSUBSCRIBED");
+      setFeedback({
+        action: "unsubscribe",
+        text: "You have been unsubscribed from Packaging Times e-mail communications.",
+        error: false,
+      });
       setRemove(false);
     } catch (err) {
-      setError(err.message);
+      setFeedback({ action: "unsubscribe", text: err.message, error: true });
     } finally {
       setBusy("");
     }
@@ -296,6 +321,7 @@ export function ManageSubscription() {
                 <CheckboxGroup title="E-Mail Preferences" options={emailPreferences.map(([value, label]) => [value, value === "packaging-brief" ? "Weekly Packaging Brief" : label])} values={profile.emailPreferences} onChange={(value) => set("emailPreferences", value)} includeBoth />
               </fieldset>
               <ActionButton busy={busy === "save"}>SAVE MY CHANGES</ActionButton>
+              <ActionFeedback feedback={feedback} action="save" />
             </form>
           </section>
 
@@ -308,6 +334,7 @@ export function ManageSubscription() {
                 <TextField label="Confirm New E-Mail Address" type="email" required value={emailForm.confirmEmail} onChange={(e) => setEmailForm({ ...emailForm, confirmEmail: e.target.value })} />
               </fieldset>
               <ActionButton busy={busy === "email"}>UPDATE E-MAIL ADDRESS</ActionButton>
+              <ActionFeedback feedback={feedback} action="email" />
             </form>
           </section>
 
@@ -320,20 +347,13 @@ export function ManageSubscription() {
                 <strong>Remove me from Packaging Times e-mail communications</strong>
               </label>
               <ActionButton busy={busy === "unsubscribe"}>UNSUBSCRIBE</ActionButton>
+              <ActionFeedback feedback={feedback} action="unsubscribe" />
             </form>
             <p>You may subscribe again at any time.</p>
           </section>
         </>
       )}
 
-      {found && (notice || error) && (
-        <section className="subscription-confirmation" aria-live="polite">
-          <h2>CONFIRMATION</h2>
-          {notice && <><h2>{notice}</h2><p>Your Packaging Times subscription preferences have been saved.</p></>}
-          {error && <p className="subscription-error" role="alert">{error}</p>}
-          <Link className="subscription-action-link" to="/">RETURN TO PACKAGING TIMES <span aria-hidden="true">→</span></Link>
-        </section>
-      )}
     </div>
   );
 }
