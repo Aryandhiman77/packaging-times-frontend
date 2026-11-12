@@ -3503,6 +3503,80 @@ select:focus-visible {
   pointer-events: none;
 }
 
+.packaging-brief-cms-content {
+  min-height: 760px;
+  font: 17px/1.55 Arial, Helvetica, sans-serif;
+}
+
+.packaging-brief-cms-content > :first-child {
+  margin-top: 0;
+}
+
+.packaging-brief-cms-content p,
+.packaging-brief-cms-content ul,
+.packaging-brief-cms-content ol,
+.packaging-brief-cms-content blockquote,
+.packaging-brief-cms-content table {
+  margin: 0 0 16px;
+}
+
+.packaging-brief-cms-content img,
+.packaging-brief-cms-content figure,
+.packaging-brief-cms-content table {
+  max-width: 100%;
+}
+
+.packaging-brief-cms-content img {
+  height: auto;
+}
+
+.packaging-brief-cms-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.packaging-brief-cms-content td,
+.packaging-brief-cms-content th {
+  padding: 8px;
+  border: 1px solid #b9c7d1;
+}
+
+.packaging-brief-editor-panel {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+}
+
+.packaging-brief-editor-panel .category-tinymce {
+  min-width: 0;
+}
+
+.packaging-brief-ckeditor {
+  min-width: 0;
+}
+
+.packaging-brief-ckeditor .ck-editor__editable_inline {
+  min-height: 520px;
+  font: 15px/1.5 Arial, Helvetica, sans-serif;
+}
+
+.packaging-brief-ckeditor .ck.ck-toolbar {
+  border-color: #d8e4ec;
+}
+
+.packaging-brief-ckeditor .ck.ck-editor__main > .ck-editor__editable {
+  border-color: #d8e4ec;
+}
+
+.packaging-brief-editor-skeleton {
+  padding: 24px;
+}
+
+.packaging-brief-save-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
 @media (max-width: 1300px) {
   .main-nav > a,
   .main-nav > .subscribe-menu > a {
@@ -3572,6 +3646,19 @@ select:focus-visible {
   .packaging-brief-editor {
     min-height: 480px;
     padding: 16px 0;
+  }
+
+  .packaging-brief-cms-content {
+    min-height: 480px;
+    font-size: 16px;
+  }
+
+  .packaging-brief-editor-panel {
+    padding: 12px;
+  }
+
+  .packaging-brief-ckeditor .ck-editor__editable_inline {
+    min-height: 420px;
   }
 }
 
@@ -3747,5 +3834,65 @@ select:focus-visible {
   .site-grid .ad-column .ad-filled {
     height: auto;
     min-height: 0;
+  }
+}
+
+/* Keep desktop ads close to the header and move mobile ads into the content flow. */
+.site-grid .ad-column {
+  padding-top: 5px;
+}
+
+.mobile-inline-ads {
+  display: none;
+}
+
+@media (max-width: 760px),
+  (max-width: 1100px) and (hover: none) and (pointer: coarse) {
+  .site-grid .ad-column {
+    display: none !important;
+  }
+
+  .mobile-inline-ads {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+    margin-top: 5px;
+    padding: 0 12px 8px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+  }
+
+  .mobile-inline-ads .ad-filled {
+    flex: 0 0 min(78vw, 320px);
+    width: min(78vw, 320px);
+    height: auto;
+    min-height: 0;
+    max-height: 170px;
+    overflow: hidden;
+    background: #fff;
+    scroll-snap-align: start;
+  }
+
+  .mobile-inline-ads .ad-filled > a {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .mobile-inline-ads .ad-image {
+    width: 100%;
+    height: auto;
+    max-height: 170px;
+    object-fit: contain;
+  }
+
+  .mobile-inline-ads .ad-skeleton-surface {
+    min-height: 120px;
+  }
+
+  .dynamic-bottom-ads {
+    display: none !important;
   }
 }

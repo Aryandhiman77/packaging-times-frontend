@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../lib/api.js";
-import { FormSkeleton, InlineSkeleton } from "../components/Skeletons.jsx";
+import { FormSkeleton, InlineSkeleton, PageSkeleton } from "../components/Skeletons.jsx";
 
 const interests = [
   ["flexible-packaging", "Flexible Packaging"],
@@ -359,18 +359,37 @@ export function ManageSubscription() {
 }
 
 export function PackagingBrief() {
+  const [content, setContent] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    api("/public/packaging-brief")
+      .then((item) => {
+        if (active) setContent(item?.html || "");
+      })
+      .catch((err) => {
+        if (active) setError(err.message);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (!content && !error) return <PageSkeleton />;
+
   return (
-    <article className="packaging-brief-page">
-      <h1>Packaging Brief</h1>
-      <div
-        className="packaging-brief-editor"
-        contentEditable
-        suppressContentEditableWarning
-        role="textbox"
-        aria-multiline="true"
-        aria-label="Packaging Brief open text page"
-        data-placeholder="Open Text Page"
-      />
+    <article className="packaging-brief-page packaging-brief-cms-page">
+      {error ? (
+        <p className="subscription-error" role="alert">{error}</p>
+      ) : (
+        <div
+          className="packaging-brief-cms-content"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      )}
     </article>
   );
 }
