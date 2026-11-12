@@ -212,39 +212,6 @@ function AdColumn({ side, banners, loading = false }) {
   );
 }
 
-const mobileAdSlots = [
-  "left-1",
-  "right-1",
-  "left-2",
-  "right-2",
-  "left-3",
-  "right-3",
-  "left-4",
-  "right-4",
-  "bottom-1",
-  "bottom-2",
-];
-
-function MobileInlineAds({ banners, loading = false }) {
-  const slots = loading
-    ? mobileAdSlots.slice(0, 2)
-    : mobileAdSlots.filter((slot) => Boolean(banners?.[slot]));
-
-  if (!slots.length) return null;
-
-  return (
-    <aside className="mobile-inline-ads" aria-label="Advertisements">
-      {slots.map((slot) => (
-        <AdPosition
-          key={`mobile-${slot}`}
-          slot={slot}
-          banner={banners?.[slot]}
-          loading={loading}
-        />
-      ))}
-    </aside>
-  );
-}
 function Footer({ settings }) {
   const address = settings.mailingAddress || defaults.mailingAddress;
   const [addressLead, ...addressRest] = address.split(",");
@@ -411,9 +378,6 @@ export default function PublicLayout() {
           <AdColumn side="left" banners={banners} loading={bannersLoading} />
         )}
         <section className="page-middle" aria-label="Main content">
-          {!documentPage && (
-            <MobileInlineAds banners={banners} loading={bannersLoading} />
-          )}
           {pathname.startsWith("/story/") ? (
             <StoryPage />
           ) : (
