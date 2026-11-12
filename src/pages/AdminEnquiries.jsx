@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import { api, friendlyDate } from "../lib/api.js";
 import AdminPagination from "../components/AdminPagination.jsx";
+import { TableSkeleton } from "../components/Skeletons.jsx";
 
 const statusOptions = [
   ["new", "New"],
@@ -25,8 +26,10 @@ export default function AdminEnquiries({ type = "messages" }) {
   const [readFilter, setReadFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   async function load() {
+    setLoading(true);
     try {
       const query = new URLSearchParams({
         page: String(page),
@@ -41,6 +44,8 @@ export default function AdminEnquiries({ type = "messages" }) {
       if (data.pagination.page !== page) setPage(data.pagination.page);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -199,7 +204,11 @@ export default function AdminEnquiries({ type = "messages" }) {
       )}
 
       <div className="admin-table-scroll">
-        <table className="admin-table">
+        {loading ? (
+          <TableSkeleton columns={6} />
+        ) : (
+          <>
+            <table className="admin-table">
           <thead>
             <tr>
               <th>Client</th>
@@ -238,9 +247,11 @@ export default function AdminEnquiries({ type = "messages" }) {
               </tr>
             ))}
           </tbody>
-        </table>
+            </table>
 
-        {!items.length && <p className="quiet">No requests found.</p>}
+            {!items.length && <p className="quiet">No requests found.</p>}
+          </>
+        )}
       </div>
 
       <AdminPagination pagination={pagination} onPageChange={setPage} />

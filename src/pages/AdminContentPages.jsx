@@ -38,6 +38,7 @@ import { Plus, Save, Pencil, Trash2, Search, FileText } from "lucide-react";
 
 import { api, maxImageSize } from "../lib/api.js";
 import AdminPagination from "../components/AdminPagination.jsx";
+import { TableSkeleton } from "../components/Skeletons.jsx";
 
 const categories = ["trends", "flexibles", "rigid", "advertising"];
 
@@ -419,7 +420,7 @@ export default function AdminContentPages() {
   const [pagination, setPagination] = useState(null);
   const [nextOrder, setNextOrder] = useState(1);
 
-  const [didLoad, setDidLoad] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [editor, setEditor] = useState(null);
 
   const [error, setError] = useState("");
@@ -439,6 +440,7 @@ export default function AdminContentPages() {
 
   useEffect(() => {
     let active = true;
+    setLoading(true);
 
     const timeout = setTimeout(() => {
       api(`/admin/content-pages?${query}`)
@@ -448,7 +450,6 @@ export default function AdminContentPages() {
           setItems(data.items || []);
           setPagination(data.pagination);
           setNextOrder(data.nextOrder || 1);
-          setDidLoad(true);
           setError("");
 
           if (
@@ -468,6 +469,9 @@ export default function AdminContentPages() {
         })
         .catch((err) => {
           if (active) setError(err.message);
+        })
+        .finally(() => {
+          if (active) setLoading(false);
         });
     }, 220);
 
@@ -591,7 +595,10 @@ export default function AdminContentPages() {
       )}
 
       <div className="admin-panel admin-table-scroll">
-        <table className="admin-table">
+        {loading ? (
+          <TableSkeleton columns={5} />
+        ) : (
+          <table className="admin-table">
           <thead>
             <tr>
               <th>Page</th>
@@ -654,7 +661,8 @@ export default function AdminContentPages() {
               </tr>
             )}
           </tbody>
-        </table>
+          </table>
+        )}
       </div>
 
       <AdminPagination pagination={pagination} onPageChange={setPage} />

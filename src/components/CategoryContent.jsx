@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { api } from "../lib/api.js";
 import CategorySeo from "./CategorySeo.jsx";
+import { PageSkeleton } from "./Skeletons.jsx";
 
 export default function CategoryContent({ category, fallback = null }) {
   const { search } = useLocation();
@@ -104,7 +105,7 @@ export default function CategoryContent({ category, fallback = null }) {
   }
 
   if (pages === null || (selected && !item)) {
-    return <div className="category-story-loading" aria-busy="true" />;
+    return <PageSkeleton />;
   }
 
   if (!pages.length) {

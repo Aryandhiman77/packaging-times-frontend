@@ -117,6 +117,29 @@ export const pages = [
     label: "Contact Us",
     path: "/contact-us",
   },
+  {
+    slug: "shopping-cart",
+    label: "Shopping Cart",
+    path: "/shopping-cart",
+  },
+  {
+    slug: "subscription-thanks",
+    label: "Subscription Thank You",
+    path: "/subscribe-free/thank-you",
+    hidden: true,
+  },
+  {
+    slug: "manage-subscription",
+    label: "Manage Subscription",
+    path: "/manage-subscription",
+    hidden: true,
+  },
+  {
+    slug: "packaging-brief",
+    label: "Packaging Brief",
+    path: "/packaging-brief",
+    hidden: true,
+  },
 ];
 
 export const adSlots = [

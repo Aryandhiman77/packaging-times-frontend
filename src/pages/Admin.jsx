@@ -34,6 +34,13 @@ import {
   defaults,
 } from "../lib/api.js";
 import AdminPagination from "../components/AdminPagination.jsx";
+import {
+  CardGridSkeleton,
+  DashboardSkeleton,
+  FormSkeleton,
+  LoginSkeleton,
+  TableSkeleton,
+} from "../components/Skeletons.jsx";
 export function AdminLogin() {
   const [form, setForm] = useState({
     email: "",
@@ -77,7 +84,7 @@ export function AdminLogin() {
   }
 
   if (checking) {
-    return <div className="login-screen">Checking session...</div>;
+    return <LoginSkeleton />;
   }
 
   if (authenticated) {
@@ -196,7 +203,7 @@ export function AdminLayout() {
   }
 
   if (auth === "checking") {
-    return <div className="login-screen">Checking admin session...</div>;
+    return <LoginSkeleton />;
   }
 
   if (auth === "no") {
@@ -300,7 +307,11 @@ export function AdminOverview() {
 
       {error && <Notice text={error} bad />}
 
-      <div className="stats-grid">
+      {!data && !error ? (
+        <DashboardSkeleton />
+      ) : (
+        <>
+          <div className="stats-grid">
         {stats.map(([label, key, Icon]) => (
           <div className="stat-card" key={key}>
             <div className="stat-icon">
@@ -312,9 +323,9 @@ export function AdminOverview() {
             <strong>{data?.[key] ?? "—"}</strong>
           </div>
         ))}
-      </div>
+          </div>
 
-      <div className="admin-panel">
+          <div className="admin-panel">
         <h3>Recent enquiries</h3>
 
         {data?.latest?.length ? (
@@ -363,7 +374,9 @@ export function AdminOverview() {
         ) : (
           <p className="quiet">No enquiries yet.</p>
         )}
-      </div>
+          </div>
+        </>
+      )}
     </>
   );
 }
@@ -675,8 +688,10 @@ export function AdminBanners() {
     [pageFilter, setPageFilter] = useState("all"),
     [statusFilter, setStatusFilter] = useState("all"),
     [page, setPage] = useState(1),
-    [pagination, setPagination] = useState(null);
+    [pagination, setPagination] = useState(null),
+    [loading, setLoading] = useState(true);
   async function load() {
+    setLoading(true);
     try {
       setError("");
       const query = new URLSearchParams({
@@ -690,6 +705,8 @@ export function AdminBanners() {
       setPagination(result.pagination);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   }
   useEffect(() => {
@@ -779,7 +796,9 @@ export function AdminBanners() {
       </div>
       <Notice text={status} onClose={() => setStatus("")} />
       <Notice text={error} bad onClose={() => setError("")} />
-      {items.length ? (
+      {loading ? (
+        <CardGridSkeleton />
+      ) : items.length ? (
         <div className="banner-table-grid">
           {items.map((item) => (
             <article key={item._id} className="banner-admin-card">
@@ -1055,8 +1074,10 @@ export function AdminNews() {
     [published, setPublished] = useState("all"),
     [featured, setFeatured] = useState("all"),
     [page, setPage] = useState(1),
-    [pagination, setPagination] = useState(null);
+    [pagination, setPagination] = useState(null),
+    [loading, setLoading] = useState(true);
   async function load() {
+    setLoading(true);
     try {
       const query = new URLSearchParams({
         page: String(page),
@@ -1071,6 +1092,8 @@ export function AdminNews() {
       if (result.pagination.page !== page) setPage(result.pagination.page);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   }
   useEffect(() => {
@@ -1157,7 +1180,9 @@ export function AdminNews() {
       <Notice text={status} onClose={() => setStatus("")} />
       <Notice text={error} bad onClose={() => setError("")} />
       <div className="admin-panel admin-table-scroll">
-        {items.length ? (
+        {loading ? (
+          <TableSkeleton columns={5} />
+        ) : items.length ? (
           <table className="admin-table">
             <thead>
               <tr>
@@ -1240,11 +1265,13 @@ export function AdminSettings() {
     [editor, setEditor] = useState(false),
     [error, setError] = useState(""),
     [status, setStatus] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [loading, setLoading] = useState(true);
   useEffect(() => {
     api("/admin/settings")
       .then((data) => setSettings({ ...defaults, ...data }))
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   }, []);
   async function save(e) {
     e.preventDefault();
@@ -1277,20 +1304,25 @@ export function AdminSettings() {
         <button
           className="admin-primary transition-colors"
           onClick={() => setEditor(true)}
+          disabled={loading}
         >
           <Pencil size={16} /> Edit Settings
         </button>
       </div>
       <Notice text={status} onClose={() => setStatus("")} />
       <Notice text={error} bad onClose={() => setError("")} />
-      <div className="admin-panel settings-summary">
-        {settingsFields.map(([key, label]) => (
-          <div key={key}>
-            <span>{label}</span>
-            <strong>{settings[key] || "Not set"}</strong>
-          </div>
-        ))}
-      </div>
+      {loading ? (
+        <div className="admin-panel"><FormSkeleton /></div>
+      ) : (
+        <div className="admin-panel settings-summary">
+          {settingsFields.map(([key, label]) => (
+            <div key={key}>
+              <span>{label}</span>
+              <strong>{settings[key] || "Not set"}</strong>
+            </div>
+          ))}
+        </div>
+      )}
       {editor && (
         <Modal
           title="Edit Website Settings"
@@ -1352,8 +1384,10 @@ export function AdminSubscribers() {
   const [pagination, setPagination] = useState(null);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(true);
 
   async function load() {
+    setLoading(true);
     try {
       setError("");
       const query = new URLSearchParams({ page: String(page), search });
@@ -1363,6 +1397,8 @@ export function AdminSubscribers() {
       if (result.pagination.page !== page) setPage(result.pagination.page);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -1412,12 +1448,15 @@ export function AdminSubscribers() {
       <Notice text={error} bad onClose={() => setError("")} />
 
       <div className="admin-panel admin-table-scroll">
-        {items.length ? (
+        {loading ? (
+          <TableSkeleton columns={5} />
+        ) : items.length ? (
           <table className="admin-table">
             <thead>
               <tr>
                 <th>Name</th>
                 <th>Email</th>
+                <th>Status</th>
                 <th>Updated</th>
                 <th>Action</th>
               </tr>
@@ -1425,16 +1464,22 @@ export function AdminSubscribers() {
             <tbody>
               {items.map((item) => (
                 <tr key={item._id}>
-                  <td>{item.name || "—"}</td>
+                  <td>
+                    {item.name ||
+                      [item.firstName, item.lastName].filter(Boolean).join(" ") ||
+                      "—"}
+                  </td>
                   <td>{item.email}</td>
+                  <td>{item.active === false ? "Unsubscribed" : "Active"}</td>
                   <td>{friendlyDate(item.updatedAt || item.createdAt)}</td>
                   <td>
                     <button
                       className="admin-danger"
                       type="button"
                       onClick={() => unsubscribe(item)}
+                      disabled={item.active === false}
                     >
-                      Unsubscribe
+                      {item.active === false ? "Unsubscribed" : "Unsubscribe"}
                     </button>
                   </td>
                 </tr>

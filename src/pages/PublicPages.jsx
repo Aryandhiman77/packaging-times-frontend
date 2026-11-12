@@ -9,17 +9,24 @@ import { api, friendlyDate } from "../lib/api.js";
 import Seo from "../components/Seo.jsx";
 
 import CategoryContent from "../components/CategoryContent.jsx";
+import { PageSkeleton } from "../components/Skeletons.jsx";
+import {
+  ManageSubscription,
+  PackagingBrief,
+  SubscriptionSignup,
+  SubscriptionThankYou,
+} from "./SubscriptionPages.jsx";
 
-export function PublicContent({ page, news, settings }) {
+export function PublicContent({ page, news, settings, loading }) {
   if (page === "home") {
-    return <Home news={news} settings={settings} />;
+    return <Home news={news} settings={settings} loading={loading} />;
   }
 
   if (page === "flexibles") {
     return (
       <CategoryContent
         category="flexibles"
-        fallback={<StoryIndex news={news} category="Flexibles" />}
+        fallback={<StoryIndex news={news} category="Flexibles" loading={loading} />}
       />
     );
   }
@@ -28,7 +35,7 @@ export function PublicContent({ page, news, settings }) {
     return (
       <CategoryContent
         category="rigid"
-        fallback={<StoryIndex news={news} category="Rigid" />}
+        fallback={<StoryIndex news={news} category="Rigid" loading={loading} />}
       />
     );
   }
@@ -37,7 +44,7 @@ export function PublicContent({ page, news, settings }) {
     return (
       <CategoryContent
         category="trends"
-        fallback={<StoryIndex news={news} category="Trends" />}
+        fallback={<StoryIndex news={news} category="Trends" loading={loading} />}
       />
     );
   }
@@ -49,11 +56,33 @@ export function PublicContent({ page, news, settings }) {
   }
 
   if (page === "subscribe") {
-    return <Subscription />;
+    return <SubscriptionSignup />;
+  }
+
+  if (page === "subscription-thanks") {
+    return <SubscriptionThankYou />;
+  }
+
+  if (page === "manage-subscription") {
+    return <ManageSubscription />;
+  }
+
+  if (page === "packaging-brief") {
+    return <PackagingBrief />;
   }
 
   if (page === "contact") {
     return <ContactPage settings={settings} />;
+  }
+
+  if (page === "shopping-cart") {
+    return (
+      <div className="inside-page mx-auto w-full">
+        <p className="eyebrow">Packaging Times</p>
+        <h1>Shopping Cart</h1>
+        <p className="intro-text">Shopping cart ordering is currently unavailable.</p>
+      </div>
+    );
   }
 
   return <Home news={news} settings={settings} />;
@@ -86,7 +115,9 @@ function StoryList({ stories, compact = false }) {
   );
 }
 
-function Home({ news, settings }) {
+function Home({ news, settings, loading }) {
+  if (loading) return <PageSkeleton />;
+
   return (
     <div className="home-center">
       <h1 className="home-title">{settings.heroHeading}</h1>
@@ -110,7 +141,9 @@ function Home({ news, settings }) {
   );
 }
 
-function StoryIndex({ news, category }) {
+function StoryIndex({ news, category, loading }) {
+  if (loading) return <PageSkeleton />;
+
   const titles = {
     Flexibles: "Flexible Packaging",
     Rigid: "Rigid Packaging",
@@ -578,7 +611,7 @@ export function StoryPage() {
       {error ? (
         <div className="empty-state">{error}</div>
       ) : !story ? (
-        <p>Loading story...</p>
+        <PageSkeleton />
       ) : (
         <article className="full-story">
           <span className="eyebrow">{story.category}</span>

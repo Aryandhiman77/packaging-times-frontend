@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { Menu, X as CloseIcon } from "lucide-react";
 import { api, assetUrl, defaults, pages } from "../lib/api.js";
 import { PublicContent, StoryPage } from "../pages/PublicPages.jsx";
+import { AdSkeleton } from "./Skeletons.jsx";
 const socials = [
   ["x", "X", "/images/social-x.png"],
   ["facebook", "Facebook", "/images/social-facebook.png"],
@@ -38,26 +39,41 @@ function Socials({ settings, footer = false }) {
     </div>
   );
 }
+
 function Brand({ settings, footer = false }) {
+  const logoSrc = footer
+    ? "/images/pt-footer-logo-pdf.jpg"
+    : "/images/pt-header-logo-pdf.jpg";
+
   return (
     <Link
       to="/"
-      className={`brand ${footer ? "footer-brand" : ""}`}
+      className={`brand pt-pdf-brand ${footer ? "footer-brand" : ""}`}
       aria-label="Packaging Times home"
     >
       <div className="brand-logo-line">
-        <span className="brand-wordmark">Packaging Times</span>
+        <img
+          className="pt-pdf-wordmark"
+          src={logoSrc}
+          alt=""
+          width="514"
+          height="76"
+          draggable="false"
+        />
+
         <span className="brand-com">.com</span>
       </div>
+
       <span className="brand-tagline">
         {settings.tagline || defaults.tagline}
       </span>
     </Link>
   );
 }
+
 function Header({ settings }) {
   const [open, setOpen] = useState(false);
-  const nav = pages.filter((p) => p.slug !== "home");
+  const nav = pages.filter((p) => !p.hidden);
   return (
     <header className="site-header">
       <div className="top-gradient" />
@@ -84,11 +100,36 @@ function Header({ settings }) {
           className={`main-nav ${open ? "is-open" : ""}`}
           aria-label="Main navigation"
         >
-          {nav.map((p) => (
-            <NavLink onClick={() => setOpen(false)} to={p.path} key={p.slug}>
-              {p.label}
-            </NavLink>
-          ))}
+          {nav.map((p) =>
+            p.slug === "subscribe" ? (
+              <div className="subscribe-menu" key={p.slug}>
+                <NavLink onClick={() => setOpen(false)} to={p.path}>
+                  {p.label}
+                </NavLink>
+                <div
+                  className="subscribe-dropdown"
+                  aria-label="Subscription pages"
+                >
+                  <Link onClick={() => setOpen(false)} to="/subscribe-free">
+                    Subscribe Sign Up
+                  </Link>
+                  <Link onClick={() => setOpen(false)} to="/packaging-brief">
+                    Packaging Brief
+                  </Link>
+                  <Link
+                    onClick={() => setOpen(false)}
+                    to="/manage-subscription"
+                  >
+                    Manage Subscription
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <NavLink onClick={() => setOpen(false)} to={p.path} key={p.slug}>
+                {p.label}
+              </NavLink>
+            ),
+          )}
         </nav>
         <div className="supplier-heading supplier-heading-right">
           Services and Suppliers
@@ -126,7 +167,7 @@ function AdPosition({ banner, slot }) {
     </div>
   );
 }
-function AdColumn({ side, banners }) {
+function AdColumn({ side, banners, loading = false }) {
   return (
     <aside
       className={`ad-column ${side}`}
@@ -134,7 +175,11 @@ function AdColumn({ side, banners }) {
     >
       {Array.from({ length: 4 }, (_, i) => {
         const slot = `${side}-${i + 1}`;
-        return <AdPosition key={slot} slot={slot} banner={banners[slot]} />;
+        return loading ? (
+          <AdSkeleton key={slot} />
+        ) : (
+          <AdPosition key={slot} slot={slot} banner={banners[slot]} />
+        );
       })}
     </aside>
   );
@@ -182,6 +227,12 @@ function Footer({ settings }) {
             </span>
             Contact Us
           </Link>
+          <Link to="/shopping-cart">
+            <span className="footer-bullet" aria-hidden="true">
+              •
+            </span>
+            Shopping Cart
+          </Link>
         </nav>
         <Brand settings={settings} footer />
         <address className="footer-contact">
@@ -216,6 +267,12 @@ function Footer({ settings }) {
 export default function PublicLayout() {
   const { pathname, search } = useLocation();
   const slug = pageFromPath(pathname);
+  const documentPage = [
+    "subscribe",
+    "subscription-thanks",
+    "manage-subscription",
+    "packaging-brief",
+  ].includes(slug);
   const [settings, setSettings] = useState(defaults),
     [banners, setBanners] = useState({}),
     [news, setNews] = useState([]),
@@ -235,6 +292,13 @@ export default function PublicLayout() {
   useEffect(() => {
     let active = true;
     setLoading(true);
+    if (documentPage) {
+      setBanners({});
+      setLoading(false);
+      return () => {
+        active = false;
+      };
+    }
     Promise.all([api(`/public/banners?page=${slug}`), api("/public/news")])
       .then(([ads, articles]) => {
         if (active) {
@@ -253,12 +317,14 @@ export default function PublicLayout() {
         if (active) setLoading(false);
       });
     return () => (active = false);
-  }, [slug]);
+  }, [slug, documentPage]);
   return (
     <>
       <Header settings={settings} />
-      <main className="site-grid">
-        <AdColumn side="left" banners={banners} />
+      <main className={`site-grid ${documentPage ? "document-layout" : ""}`}>
+        {!documentPage && (
+          <AdColumn side="left" banners={banners} loading={loading} />
+        )}
         <section className="page-middle" aria-label="Main content">
           {pathname.startsWith("/story/") ? (
             <StoryPage />
@@ -271,7 +337,7 @@ export default function PublicLayout() {
               banners={banners}
             />
           )}
-          {(banners["bottom-1"] || banners["bottom-2"]) && (
+          {!documentPage && (banners["bottom-1"] || banners["bottom-2"]) && (
             <div className="bottom-ads dynamic-bottom-ads">
               {["bottom-1", "bottom-2"].map((slot) => (
                 <div key={slot}>
@@ -299,7 +365,9 @@ export default function PublicLayout() {
             </div>
           )}
         </section>
-        <AdColumn side="right" banners={banners} />
+        {!documentPage && (
+          <AdColumn side="right" banners={banners} loading={loading} />
+        )}
       </main>
       <Footer settings={settings} />
     </>
