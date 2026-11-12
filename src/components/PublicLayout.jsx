@@ -321,7 +321,7 @@ export default function PublicLayout() {
       setBanners({});
       setBannersLoading(false);
     } else {
-      // The server supports ads attached to each published CKEditor page.
+      // The server supports ads attached to each published CMS page.
       // Forward the active ?page= slug when Continue changes the page.
       const bannerQuery = new URLSearchParams({ page: slug });
       const selectedContentPage = new URLSearchParams(search).get("page");

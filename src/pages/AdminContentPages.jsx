@@ -156,7 +156,7 @@ const editorConfig = {
   table_responsive_width: true,
 };
 
-function RichEditor({ value, onChange, onInit }) {
+export function RichEditor({ value, onChange, onInit }) {
   const [error, setError] = useState("");
 
   return (

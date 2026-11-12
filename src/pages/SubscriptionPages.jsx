@@ -359,7 +359,9 @@ export function ManageSubscription() {
 }
 
 export function PackagingBrief() {
-  const [content, setContent] = useState(null);
+  const defaultContent = "<h1>PACKAGING BRIEF</h1><p></p>";
+  const [content, setContent] = useState(defaultContent);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -367,10 +369,13 @@ export function PackagingBrief() {
 
     api("/public/packaging-brief")
       .then((item) => {
-        if (active) setContent(item?.html || "");
+        if (active) setContent(item?.html?.trim() || defaultContent);
       })
       .catch((err) => {
         if (active) setError(err.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
 
     return () => {
@@ -378,7 +383,7 @@ export function PackagingBrief() {
     };
   }, []);
 
-  if (!content && !error) return <PageSkeleton />;
+  if (loading) return <PageSkeleton />;
 
   return (
     <article className="packaging-brief-page packaging-brief-cms-page">

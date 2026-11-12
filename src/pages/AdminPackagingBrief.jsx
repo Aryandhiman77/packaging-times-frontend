@@ -1,149 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Save } from "lucide-react";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import {
-  Alignment,
-  BlockQuote,
-  Bold,
-  ClassicEditor,
-  Essentials,
-  FontBackgroundColor,
-  FontColor,
-  FontSize,
-  GeneralHtmlSupport,
-  Heading,
-  Image,
-  ImageCaption,
-  ImageResize,
-  ImageStyle,
-  ImageToolbar,
-  ImageUpload,
-  Italic,
-  Link,
-  List,
-  Paragraph,
-  SourceEditing,
-  Strikethrough,
-  Table,
-  TableToolbar,
-  Underline,
-  Undo,
-} from "ckeditor5";
-import "ckeditor5/ckeditor5.css";
 
-import { api, friendlyDate, maxImageSize } from "../lib/api.js";
+import { api, friendlyDate } from "../lib/api.js";
 import { FormSkeleton, InlineSkeleton } from "../components/Skeletons.jsx";
+import { RichEditor } from "./AdminContentPages.jsx";
 
-class PackagingBriefUploadAdapter {
-  constructor(loader) {
-    this.loader = loader;
-    this.controller = new AbortController();
-  }
-
-  async upload() {
-    const file = await this.loader.file;
-    if (!file || file.size > maxImageSize) {
-      throw new Error("Image must be 10MB or smaller.");
-    }
-
-    const body = new FormData();
-    body.append("image", file, file.name);
-    const uploaded = await api("/admin/content-images", {
-      method: "POST",
-      body,
-      signal: this.controller.signal,
-    });
-
-    return { default: uploaded.url };
-  }
-
-  abort() {
-    this.controller.abort();
-  }
-}
-
-function packagingBriefUploadPlugin(editor) {
-  editor.plugins.get("FileRepository").createUploadAdapter = (loader) =>
-    new PackagingBriefUploadAdapter(loader);
-}
-
-const editorConfig = {
-  licenseKey: "GPL",
-  plugins: [
-    Essentials,
-    Paragraph,
-    Heading,
-    Bold,
-    Italic,
-    Underline,
-    Strikethrough,
-    Link,
-    List,
-    BlockQuote,
-    Alignment,
-    FontColor,
-    FontBackgroundColor,
-    FontSize,
-    Image,
-    ImageUpload,
-    ImageToolbar,
-    ImageCaption,
-    ImageStyle,
-    ImageResize,
-    Table,
-    TableToolbar,
-    SourceEditing,
-    GeneralHtmlSupport,
-    Undo,
-  ],
-  extraPlugins: [packagingBriefUploadPlugin],
-  toolbar: {
-    items: [
-      "undo",
-      "redo",
-      "|",
-      "heading",
-      "|",
-      "fontSize",
-      "fontColor",
-      "fontBackgroundColor",
-      "|",
-      "bold",
-      "italic",
-      "underline",
-      "strikethrough",
-      "|",
-      "alignment",
-      "bulletedList",
-      "numberedList",
-      "|",
-      "link",
-      "uploadImage",
-      "insertTable",
-      "blockQuote",
-      "sourceEditing",
-    ],
-    shouldNotGroupWhenFull: true,
-  },
-  image: {
-    toolbar: [
-      "imageTextAlternative",
-      "toggleImageCaption",
-      "imageStyle:inline",
-      "imageStyle:block",
-      "imageStyle:side",
-    ],
-  },
-  table: {
-    contentToolbar: ["tableColumn", "tableRow", "mergeTableCells"],
-  },
-  htmlSupport: {
-    allow: [{ name: /.*/, attributes: true, classes: true, styles: true }],
-  },
-};
+const DEFAULT_HTML = "<h1>PACKAGING BRIEF</h1><p></p>";
 
 export default function AdminPackagingBrief() {
-  const [html, setHtml] = useState("<h1>PACKAGING BRIEF</h1><p></p>");
+  const [html, setHtml] = useState(DEFAULT_HTML);
   const [updatedAt, setUpdatedAt] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -157,7 +22,7 @@ export default function AdminPackagingBrief() {
     api("/admin/packaging-brief")
       .then((item) => {
         if (!active) return;
-        setHtml(item?.html || "<h1>PACKAGING BRIEF</h1><p></p>");
+        setHtml(item?.html?.trim() || DEFAULT_HTML);
         setUpdatedAt(item?.updatedAt || null);
       })
       .catch((err) => {
@@ -179,7 +44,7 @@ export default function AdminPackagingBrief() {
     setSuccess("");
 
     try {
-      const currentHtml = editorRef.current?.getData() || html;
+      const currentHtml = editorRef.current?.getContent() || html || DEFAULT_HTML;
       const item = await api("/admin/packaging-brief", {
         method: "PATCH",
         body: JSON.stringify({ html: currentHtml }),
@@ -213,15 +78,13 @@ export default function AdminPackagingBrief() {
         </div>
       ) : (
         <form className="admin-panel packaging-brief-editor-panel" onSubmit={save}>
-          <div className="packaging-brief-ckeditor">
-            <CKEditor
-              editor={ClassicEditor}
-              config={editorConfig}
-              data={html}
-              onReady={(editor) => {
+          <div className="packaging-brief-tinymce">
+            <RichEditor
+              value={html}
+              onInit={(editor) => {
                 editorRef.current = editor;
               }}
-              onChange={(_event, editor) => setHtml(editor.getData())}
+              onChange={setHtml}
             />
           </div>
 
