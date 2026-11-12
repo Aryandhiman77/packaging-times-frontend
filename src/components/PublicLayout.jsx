@@ -3,7 +3,6 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { Menu, X as CloseIcon } from "lucide-react";
 import { api, assetUrl, defaults, pages } from "../lib/api.js";
 import { PublicContent, StoryPage } from "../pages/PublicPages.jsx";
-import { AdSkeleton } from "./Skeletons.jsx";
 const socials = [
   ["x", "X", "/images/social-x.png"],
   ["facebook", "Facebook", "/images/social-facebook.png"],
@@ -138,20 +137,45 @@ function Header({ settings }) {
     </header>
   );
 }
-function AdPosition({ banner, slot }) {
+function AdPosition({ banner, slot, loading = false }) {
+  const [imageReady, setImageReady] = useState(false);
+
+  useEffect(() => {
+    setImageReady(false);
+  }, [banner?._id, banner?.imageUrl]);
+
+  if (loading) {
+    return (
+      <div
+        className="ad-filled ad-is-loading"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        aria-label={`Loading ${slot} advertisement`}
+      >
+        <div className="ad-skeleton-surface" aria-hidden="true" />
+      </div>
+    );
+  }
+
   if (!banner) {
     return <div className="ad-empty" aria-hidden="true" />;
   }
   const img = (
     <img
-      className="ad-image"
+      className={`ad-image ${imageReady ? "is-ready" : ""}`}
       src={assetUrl(banner.imageUrl)}
       alt={banner.altText || banner.title}
       loading="lazy"
+      onLoad={() => setImageReady(true)}
+      onError={() => setImageReady(true)}
     />
   );
   return (
-    <div className="ad-filled">
+    <div className={`ad-filled ${imageReady ? "" : "ad-is-loading"}`}>
+      {!imageReady && (
+        <div className="ad-skeleton-surface" aria-hidden="true" />
+      )}
       {banner.targetUrl ? (
         <a
           href={banner.targetUrl}
@@ -175,11 +199,7 @@ function AdColumn({ side, banners, loading = false }) {
     >
       {Array.from({ length: 4 }, (_, i) => {
         const slot = `${side}-${i + 1}`;
-        return loading ? (
-          <AdSkeleton key={slot} />
-        ) : (
-          <AdPosition key={slot} slot={slot} banner={banners[slot]} />
-        );
+        return <AdPosition key={slot} slot={slot} banner={banners?.[slot]} loading={loading} />;
       })}
     </aside>
   );
@@ -275,6 +295,7 @@ export default function PublicLayout() {
   ].includes(slug);
   const [settings, setSettings] = useState(defaults),
     [banners, setBanners] = useState({}),
+    [bannersLoading, setBannersLoading] = useState(true),
     [news, setNews] = useState([]),
     [offline, setOffline] = useState(false),
     [loading, setLoading] = useState(true);
@@ -292,38 +313,55 @@ export default function PublicLayout() {
   useEffect(() => {
     let active = true;
     setLoading(true);
+    setBannersLoading(!documentPage);
+
     if (documentPage) {
       setBanners({});
-      setLoading(false);
-      return () => {
-        active = false;
-      };
+      setBannersLoading(false);
+    } else {
+      // Keep ad loading independent of news loading.
+      api(`/public/banners?page=${slug}`)
+        .then((ads) => {
+          if (active) {
+            setBanners(ads || {});
+            setOffline(false);
+          }
+        })
+        .catch(() => {
+          if (active) {
+            setBanners({});
+            setOffline(true);
+          }
+        })
+        .finally(() => {
+          if (active) setBannersLoading(false);
+        });
     }
-    Promise.all([api(`/public/banners?page=${slug}`), api("/public/news")])
-      .then(([ads, articles]) => {
+
+    // Fetch news once (the incoming version fetched it twice).
+    api("/public/news")
+      .then((articles) => {
         if (active) {
-          setBanners(ads || {});
           setNews(articles || []);
-          setOffline(false);
         }
       })
       .catch(() => {
-        if (active) {
-          setBanners({});
-          setOffline(true);
-        }
+        if (active) setNews([]);
       })
       .finally(() => {
         if (active) setLoading(false);
       });
-    return () => (active = false);
+
+    return () => {
+      active = false;
+    };
   }, [slug, documentPage]);
   return (
     <>
       <Header settings={settings} />
       <main className={`site-grid ${documentPage ? "document-layout" : ""}`}>
         {!documentPage && (
-          <AdColumn side="left" banners={banners} loading={loading} />
+          <AdColumn side="left" banners={banners} loading={bannersLoading} />
         )}
         <section className="page-middle" aria-label="Main content">
           {pathname.startsWith("/story/") ? (
@@ -366,7 +404,7 @@ export default function PublicLayout() {
           )}
         </section>
         {!documentPage && (
-          <AdColumn side="right" banners={banners} loading={loading} />
+          <AdColumn side="right" banners={banners} loading={bannersLoading} />
         )}
       </main>
       <Footer settings={settings} />

@@ -100,8 +100,8 @@ select:focus-visible {
   transform-origin: center top;
 }
 @font-face {
-  font-family: "Old English Text MT Local";
-  src: local("Old English Text MT"), local("Old English Text MT Regular");
+  font-family: "Cloister Black Web";
+  src: url("./assets/fonts/CloisterBlack.ttf") format("truetype");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -122,8 +122,7 @@ select:focus-visible {
 }
 .brand-wordmark {
   font-family:
-    "Old English Text MT Local", "Old English Text MT",
-    "Old English Text MT Regular", serif;
+    "Cloister Black Web", "Cloister Black", "Old English Text MT", serif;
   font-size: min(106px, 6.35vw);
   font-weight: 400;
   line-height: 0.9;
@@ -293,6 +292,7 @@ select:focus-visible {
   font-size: 18px;
 }
 .ad-filled {
+  position: relative;
   min-height: 250px;
   width: 100%;
   height: 100%;
@@ -308,6 +308,32 @@ select:focus-visible {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.ad-image.is-ready {
+  opacity: 1;
+}
+.ad-is-loading {
+  background: #fff;
+}
+.ad-is-loading a {
+  position: relative;
+  z-index: 1;
+}
+.ad-skeleton-surface {
+  position: absolute;
+  inset: 10px;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    #e7edf2 20%,
+    #f8fafb 38%,
+    #e7edf2 56%
+  );
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.35s ease-in-out infinite;
+  pointer-events: none;
 }
 .page-middle {
   position: relative;
@@ -2311,7 +2337,7 @@ select:focus-visible {
 
 .category-story-body {
   font-size: 13px;
-  line-height: 1.58;
+  line-height: 1.35;
   overflow-wrap: anywhere;
   color: #202830;
 }
@@ -2324,23 +2350,45 @@ select:focus-visible {
 }
 
 .category-story-body p {
-  margin: 0 0 12px;
+  margin: 0 0 6px;
 }
 
 .category-story-body h1,
 .category-story-body h2,
-.category-story-body h3 {
+.category-story-body h3,
+.category-story-body h4,
+.category-story-body h5,
+.category-story-body h6 {
+  font-family: Arial, Helvetica, sans-serif;
   font-weight: 700;
-  line-height: 1.28;
-  margin: 12px 0 9px;
+  line-height: 1.2;
+  letter-spacing: normal;
+  text-transform: none;
+  margin: 10px 0 6px;
 }
 
 .category-story-body h1 {
-  font-size: 20px;
+  font-size: 24px;
 }
 
 .category-story-body h2 {
+  font-size: 20px;
+}
+
+.category-story-body h3 {
   font-size: 17px;
+}
+
+.category-story-body h4 {
+  font-size: 15px;
+}
+
+.category-story-body h5 {
+  font-size: 14px;
+}
+
+.category-story-body h6 {
+  font-size: 13px;
 }
 
 .category-story-body img {
@@ -2403,6 +2451,69 @@ select:focus-visible {
 
 .category-story-loading {
   min-height: 320px;
+}
+
+.category-skeleton {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+}
+
+.category-skeleton-lines {
+  display: grid;
+  gap: 8px;
+}
+
+.category-skeleton-block {
+  height: 11px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #e7edf2 20%,
+    #f6f8fa 38%,
+    #e7edf2 56%
+  );
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+.category-skeleton-heading {
+  width: min(72%, 440px);
+  height: 24px;
+  margin: 3px 0 4px;
+  border-radius: 6px;
+}
+
+.category-skeleton-line-short {
+  width: 62%;
+}
+
+.category-skeleton-line-medium {
+  width: 82%;
+}
+
+.category-skeleton-media {
+  width: 100%;
+  height: 132px;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ad-skeleton-surface,
+  .category-skeleton-block {
+    animation: none;
+    background: #e7edf2;
+  }
 }
 
 .category-story-empty {
@@ -2581,14 +2692,18 @@ select:focus-visible {
   margin: 5px 0 13px;
 }
 
-.category-ckeditor .ck-editor__editable_inline {
-  min-height: 270px;
-  max-height: 650px;
-  overflow-y: auto;
+.category-tinymce .tox-tinymce {
+  border-color: #cbd5e1;
+  border-radius: 7px;
 }
 
-.category-ckeditor .ck.ck-toolbar {
-  border-color: #cbd5e1;
+.category-tinymce .tox .tox-editor-header {
+  border-bottom: 1px solid #dbe3ea;
+  box-shadow: none;
+}
+
+.category-tinymce .tox .tox-statusbar {
+  border-top-color: #dbe3ea;
 }
 
 .category-seo-fields {
