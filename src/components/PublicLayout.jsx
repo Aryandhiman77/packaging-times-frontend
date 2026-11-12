@@ -212,6 +212,40 @@ function AdColumn({ side, banners, loading = false }) {
   );
 }
 
+const mobileAdSlotOrder = [
+  "left-1",
+  "right-1",
+  "left-2",
+  "right-2",
+  "left-3",
+  "right-3",
+  "left-4",
+  "right-4",
+  "bottom-1",
+  "bottom-2",
+];
+
+function MobileAdGrid({ banners, loading = false }) {
+  const slots = loading
+    ? mobileAdSlotOrder.slice(0, 4)
+    : mobileAdSlotOrder.filter((slot) => banners?.[slot]).slice(0, 4);
+
+  if (!slots.length) return null;
+
+  return (
+    <aside className="mobile-ad-grid" aria-label="Advertisement banners">
+      {slots.map((slot) => (
+        <AdPosition
+          key={slot}
+          slot={slot}
+          banner={banners?.[slot]}
+          loading={loading}
+        />
+      ))}
+    </aside>
+  );
+}
+
 function Footer({ settings }) {
   const address = settings.mailingAddress || defaults.mailingAddress;
   const [addressLead, ...addressRest] = address.split(",");
@@ -417,6 +451,9 @@ export default function PublicLayout() {
             </div>
           )}
         </section>
+        {!documentPage && (
+          <MobileAdGrid banners={banners} loading={bannersLoading} />
+        )}
         {!documentPage && (
           <AdColumn side="right" banners={banners} loading={bannersLoading} />
         )}
