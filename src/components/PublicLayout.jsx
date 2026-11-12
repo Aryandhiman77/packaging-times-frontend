@@ -199,7 +199,14 @@ function AdColumn({ side, banners, loading = false }) {
     >
       {Array.from({ length: 4 }, (_, i) => {
         const slot = `${side}-${i + 1}`;
-        return <AdPosition key={slot} slot={slot} banner={banners?.[slot]} loading={loading} />;
+        return (
+          <AdPosition
+            key={slot}
+            slot={slot}
+            banner={banners?.[slot]}
+            loading={loading}
+          />
+        );
       })}
     </aside>
   );
@@ -246,12 +253,6 @@ function Footer({ settings }) {
               •
             </span>
             Contact Us
-          </Link>
-          <Link to="/shopping-cart">
-            <span className="footer-bullet" aria-hidden="true">
-              •
-            </span>
-            Shopping Cart
           </Link>
         </nav>
         <Brand settings={settings} footer />
@@ -319,8 +320,20 @@ export default function PublicLayout() {
       setBanners({});
       setBannersLoading(false);
     } else {
-      // Keep ad loading independent of news loading.
-      api(`/public/banners?page=${slug}`)
+      // The server supports ads attached to each published CKEditor page.
+      // Forward the active ?page= slug when Continue changes the page.
+      const bannerQuery = new URLSearchParams({ page: slug });
+      const selectedContentPage = new URLSearchParams(search).get("page");
+
+      if (
+        selectedContentPage &&
+        ["trends", "flexibles", "rigid", "advertising"].includes(slug)
+      ) {
+        bannerQuery.set("contentPage", selectedContentPage);
+      }
+
+      setBanners({});
+      api(`/public/banners?${bannerQuery.toString()}`)
         .then((ads) => {
           if (active) {
             setBanners(ads || {});
@@ -355,7 +368,7 @@ export default function PublicLayout() {
     return () => {
       active = false;
     };
-  }, [slug, documentPage]);
+  }, [slug, search, documentPage]);
   return (
     <>
       <Header settings={settings} />
