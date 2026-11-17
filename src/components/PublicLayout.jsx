@@ -16,6 +16,21 @@ const footerSocials = [
   ["linkedin", "LinkedIn", "/images/footer-social-linkedin.jpg"],
 ];
 
+function normalizeSocialUrl(value) {
+  const input = String(value || "").trim();
+
+  if (!input) return "";
+
+  const candidate = /^https?:\/\//i.test(input) ? input : `https://${input}`;
+
+  try {
+    const parsed = new URL(candidate);
+    return ["http:", "https:"].includes(parsed.protocol) ? parsed.href : "";
+  } catch {
+    return "";
+  }
+}
+
 const navDropdowns = {
   subscribe: [
     ["Subscribe Sign Up", "/subscribe-free"],
@@ -59,18 +74,34 @@ function Socials({ settings, footer = false }) {
 
   return (
     <div className="social-list">
-      {items.map(([key, label, img]) => (
+      {items.map(([key, label, img]) => {
+        const href = normalizeSocialUrl(settings?.[key]);
+        const icon = <img src={img} alt="" aria-hidden="true" />;
+
+        return href ? (
           <a
             key={key}
-            target={settings[key] ? "_blank" : undefined}
-            rel={settings[key] ? "noopener noreferrer" : undefined}
-            href={settings[key] || undefined}
-            aria-label={label}
-            aria-disabled={settings[key] ? undefined : "true"}
+            className="social-link"
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer external"
+            aria-label={`Open Packaging Times on ${label}`}
+            title={label}
+            data-social-platform={key}
           >
-            <img src={img} alt={label} />
+            {icon}
           </a>
-        ))}
+        ) : (
+          <span
+            key={key}
+            className="social-link is-disabled"
+            aria-label={`${label} link is not configured`}
+            title={`${label} link is not configured`}
+          >
+            {icon}
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -123,7 +154,7 @@ function Header({ settings }) {
           <strong>FREE</strong>
         </Link>
         <Brand settings={settings} />
-        <Socials settings={settings} footer />
+        <Socials settings={settings} />
       </div>
       <div className="nav-bar lines-bg">
         <div className="supplier-heading supplier-heading-left">

@@ -1400,7 +1400,11 @@ export function AdminSettings() {
                   <input
                     className="admin-control"
                     type={
-                      key.toLowerCase().includes("email") ? "email" : "text"
+                      key.toLowerCase().includes("email")
+                        ? "email"
+                        : ["x", "facebook", "youtube", "linkedin"].includes(key)
+                          ? "url"
+                          : "text"
                     }
                     required={[
                       "tagline",
@@ -1409,6 +1413,11 @@ export function AdminSettings() {
                       "trendingEmail",
                     ].includes(key)}
                     value={settings[key] || ""}
+                    placeholder={
+                      ["x", "facebook", "youtube", "linkedin"].includes(key)
+                        ? "https://..."
+                        : undefined
+                    }
                     onChange={(e) =>
                       setSettings((p) => ({ ...p, [key]: e.target.value }))
                     }
