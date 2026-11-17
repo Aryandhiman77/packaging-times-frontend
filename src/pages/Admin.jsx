@@ -442,12 +442,7 @@ const newBanner = {
   startsAt: "",
   endsAt: "",
 };
-const contentPageCategories = new Set([
-  "trends",
-  "flexibles",
-  "rigid",
-  "advertising",
-]);
+const contentPageCategories = new Set(["home"]);
 const bannerInputStyles = "admin-control";
 const datestr = (v) => (v ? new Date(v).toISOString().slice(0, 10) : "");
 function BannerModal({ initial, onClose, onSaved }) {
@@ -455,6 +450,8 @@ function BannerModal({ initial, onClose, onSaved }) {
     initial
       ? {
           ...initial,
+          page: "home",
+          contentPage: initial.page === "home" ? initial.contentPage || "" : "",
           startsAt: datestr(initial.startsAt),
           endsAt: datestr(initial.endsAt),
         }
@@ -582,30 +579,9 @@ function BannerModal({ initial, onClose, onSaved }) {
               placeholder="Describe the image"
             />
           </label>
-          <label>
-            Website Page *
-            <select
-              className={bannerInputStyles}
-              value={form.page}
-              onChange={(e) =>
-                setForm((current) => ({
-                  ...current,
-                  page: e.target.value,
-                  contentPage: "",
-                }))
-              }
-            >
-              <option value="global">All pages (global)</option>
-              {pages.map((p) => (
-                <option key={p.slug} value={p.slug}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
-          </label>
           {contentPageCategories.has(form.page) && (
             <label>
-              Category Content Page
+              Advertisement Set
               <select
                 className={bannerInputStyles}
                 value={form.contentPage || ""}
@@ -615,7 +591,7 @@ function BannerModal({ initial, onClose, onSaved }) {
                 <option value="">
                   {contentPagesLoading
                     ? "Loading content pages..."
-                    : `All ${form.page} pages (category fallback)`}
+                    : "Default fallback for all website pages"}
                 </option>
                 {contentPages.map((item) => (
                   <option key={item._id} value={item._id}>
@@ -624,8 +600,8 @@ function BannerModal({ initial, onClose, onSaved }) {
                 ))}
               </select>
               <small>
-                Select one saved content page to give it independent ad
-                positions.
+                Home Page 1 is shown throughout the website. Select a later
+                Home story page only when its Continue page needs different ads.
               </small>
               {contentPagesError && (
                 <small className="admin-error">{contentPagesError}</small>

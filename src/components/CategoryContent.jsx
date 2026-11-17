@@ -139,7 +139,13 @@ export default function CategoryContent({ category, fallback = null }) {
   function goNext() {
     if (!next) return;
 
-    navigate(`/${category}?page=${encodeURIComponent(next.slug)}`);
+    const basePath = category === "home" ? "/" : `/${category}`;
+    navigate(`${basePath}?page=${encodeURIComponent(next.slug)}`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function goHome() {
+    navigate("/");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -158,18 +164,20 @@ export default function CategoryContent({ category, fallback = null }) {
   }
 
   return (
-    <article className="category-story">
+    <article className={`category-story category-story-${category}`}>
       <CategorySeo item={item} category={category} />
 
       <div
         ref={bodyRef}
         className={`category-story-body ${
-          expanded ? "is-expanded" : "is-clamped"
+          ["home", "trends"].includes(category) || expanded
+            ? "is-expanded"
+            : "is-clamped"
         }`}
         dangerouslySetInnerHTML={{ __html: item.html }}
       />
 
-      {(overflow || expanded) && (
+      {!["home", "trends"].includes(category) && (overflow || expanded) && (
         <button
           type="button"
           className="category-read-more"
@@ -179,10 +187,18 @@ export default function CategoryContent({ category, fallback = null }) {
         </button>
       )}
 
-      {next && (
+      {next && category === "home" && (
         <div className="category-continue-row">
           <button type="button" className="category-continue" onClick={goNext}>
-            Continue
+            {category === "home" ? "Continue Reading" : "Continue"}
+          </button>
+        </div>
+      )}
+
+      {!next && category === "home" && pages.length > 1 && (
+        <div className="category-continue-row">
+          <button type="button" className="category-continue" onClick={goHome}>
+            Return Home
           </button>
         </div>
       )}

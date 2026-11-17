@@ -2,7 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import AdminContentPages from "./pages/AdminContentPages.jsx";
 import AdminPackagingBrief from "./pages/AdminPackagingBrief.jsx";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import PublicLayout from "./components/PublicLayout.jsx";
 
@@ -46,12 +46,6 @@ function App() {
             element={<AdminEnquiries type="advertising-inquiries" />}
           />
         </Route>
-
-        {/* Keep the old cart behavior until ordering is enabled. */}
-        <Route
-          path="/shopping-cart"
-          element={<Navigate to="/advertising" replace />}
-        />
 
         <Route path="/*" element={<PublicLayout />} />
       </Routes>

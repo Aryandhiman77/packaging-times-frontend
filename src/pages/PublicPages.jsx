@@ -19,40 +19,33 @@ import {
 
 export function PublicContent({ page, news, settings, loading }) {
   if (page === "home") {
-    return <Home news={news} settings={settings} loading={loading} />;
+    return (
+      <CategoryContent
+        category="home"
+        fallback={<Home news={news} settings={settings} loading={loading} />}
+      />
+    );
   }
 
   if (page === "flexibles") {
-    return (
-      <CategoryContent
-        category="flexibles"
-        fallback={<StoryIndex news={news} category="Flexibles" loading={loading} />}
-      />
-    );
+    return <CategoryContent category="flexibles" fallback={<BlankContent />} />;
   }
 
   if (page === "rigid") {
-    return (
-      <CategoryContent
-        category="rigid"
-        fallback={<StoryIndex news={news} category="Rigid" loading={loading} />}
-      />
-    );
+    return <CategoryContent category="rigid" fallback={<BlankContent />} />;
   }
 
   if (page === "trends") {
     return (
       <CategoryContent
         category="trends"
-        fallback={<StoryIndex news={news} category="Trends" loading={loading} />}
+        fallback={<BlankContent />}
       />
     );
   }
 
   if (page === "advertising") {
-    return (
-      <CategoryContent category="advertising" fallback={<Advertising />} />
-    );
+    return <CategoryContent category="advertising" fallback={<BlankContent />} />;
   }
 
   if (page === "subscribe") {
@@ -75,17 +68,11 @@ export function PublicContent({ page, news, settings, loading }) {
     return <ContactPage settings={settings} />;
   }
 
-  if (page === "shopping-cart") {
-    return (
-      <div className="inside-page mx-auto w-full">
-        <p className="eyebrow">Packaging Times</p>
-        <h1>Shopping Cart</h1>
-        <p className="intro-text">Shopping cart ordering is currently unavailable.</p>
-      </div>
-    );
-  }
-
   return <Home news={news} settings={settings} />;
+}
+
+function BlankContent() {
+  return <div className="category-story-empty" aria-label="No content available" />;
 }
 
 function StoryList({ stories, compact = false }) {

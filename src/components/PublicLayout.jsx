@@ -15,6 +15,43 @@ const footerSocials = [
   ["youtube", "YouTube", "/images/footer-social-youtube.jpg"],
   ["linkedin", "LinkedIn", "/images/footer-social-linkedin.jpg"],
 ];
+
+const navDropdowns = {
+  subscribe: [
+    ["Subscribe Sign Up", "/subscribe-free"],
+    ["Packaging Brief", "/packaging-brief"],
+    ["Manage Subscription", "/manage-subscription"],
+  ],
+  flexibles: [
+    ["Flexible Packaging", "/flexibles?page=flexible-packaging"],
+    ["Bags & Pouches", "/flexibles?page=bags-pouches"],
+    ["Films & Rollstock", "/flexibles?page=films-rollstock"],
+    ["Coffee & Specialty Food Packaging", "/flexibles?page=coffee-specialty-food-packaging"],
+    ["Printing, Closures & Converting", "/flexibles?page=printing-closures-converting"],
+  ],
+  rigid: [
+    ["Rigid Packaging", "/rigid?page=rigid-packaging"],
+    ["Retail Folding Cartons", "/rigid?page=retail-folding-cartons"],
+    ["POS / Counter Display Cartons", "/rigid?page=pos-counter-display-cartons"],
+    ["Bottles, Jars & Containers", "/rigid?page=bottles-jars-containers"],
+    ["Tins, Tumblers & Specialty Packaging", "/rigid?page=tins-tumblers-specialty-packaging"],
+    ["Corrugated & Shipping Packaging", "/rigid?page=corrugated-shipping-packaging"],
+  ],
+  advertising: [
+    ["Advertise With Packaging Times", "/advertising"],
+    ["Display Advertising", "/advertising?page=display-advertising"],
+    ["Featured Company / Sponsored Story", "/advertising?page=featured-company-sponsored-story"],
+    ["Advertising Rates & Availability", "/advertising?page=advertising-rates-availability"],
+  ],
+  trends: [
+    ["Packaging Trends", "/trends?page=packaging-trends"],
+    ["New Packaging Concepts", "/trends?page=new-packaging-concepts"],
+    ["Materials & Sustainability", "/trends?page=materials-sustainability"],
+    ["Printing, Graphics & Finishing", "/trends?page=printing-graphics-finishing"],
+    ["AI, Automation & Smart Packaging", "/trends?page=ai-automation-smart-packaging"],
+    ["Manufacturing & Supply Chain", "/trends?page=manufacturing-supply-chain"],
+  ],
+};
 const pageFromPath = (pathname) =>
   pages.find((p) => p.path === pathname)?.slug || "home";
 function Socials({ settings, footer = false }) {
@@ -22,15 +59,14 @@ function Socials({ settings, footer = false }) {
 
   return (
     <div className="social-list">
-      {items
-        .filter(([key]) => Boolean(settings[key]))
-        .map(([key, label, img]) => (
+      {items.map(([key, label, img]) => (
           <a
             key={key}
-            target="_blank"
-            rel="noopener noreferrer"
-            href={settings[key]}
+            target={settings[key] ? "_blank" : undefined}
+            rel={settings[key] ? "noopener noreferrer" : undefined}
+            href={settings[key] || undefined}
             aria-label={label}
+            aria-disabled={settings[key] ? undefined : "true"}
           >
             <img src={img} alt={label} />
           </a>
@@ -73,6 +109,11 @@ function Brand({ settings, footer = false }) {
 function Header({ settings }) {
   const [open, setOpen] = useState(false);
   const nav = pages.filter((p) => !p.hidden);
+
+  const closeNavigation = () => {
+    setOpen(false);
+  };
+
   return (
     <header className="site-header">
       <div className="top-gradient" />
@@ -99,36 +140,34 @@ function Header({ settings }) {
           className={`main-nav ${open ? "is-open" : ""}`}
           aria-label="Main navigation"
         >
-          {nav.map((p) =>
-            p.slug === "subscribe" ? (
-              <div className="subscribe-menu" key={p.slug}>
-                <NavLink onClick={() => setOpen(false)} to={p.path}>
+          {nav.map((p) => {
+            const dropdown = navDropdowns[p.slug];
+
+            if (!dropdown) {
+              return (
+                <NavLink onClick={closeNavigation} to={p.path} key={p.slug}>
                   {p.label}
                 </NavLink>
-                <div
-                  className="subscribe-dropdown"
-                  aria-label="Subscription pages"
-                >
-                  <Link onClick={() => setOpen(false)} to="/subscribe-free">
-                    Subscribe Sign Up
-                  </Link>
-                  <Link onClick={() => setOpen(false)} to="/packaging-brief">
-                    Packaging Brief
-                  </Link>
-                  <Link
-                    onClick={() => setOpen(false)}
-                    to="/manage-subscription"
-                  >
-                    Manage Subscription
-                  </Link>
+              );
+            }
+
+            return (
+              <div className="nav-menu" key={p.slug}>
+                <div className="nav-menu-trigger">
+                  <NavLink onClick={closeNavigation} to={p.path}>
+                    {p.label}
+                  </NavLink>
+                </div>
+                <div className="nav-dropdown" aria-label={`${p.label} pages`}>
+                  {dropdown.map(([label, path]) => (
+                    <Link key={path} onClick={closeNavigation} to={path}>
+                      {label}
+                    </Link>
+                  ))}
                 </div>
               </div>
-            ) : (
-              <NavLink onClick={() => setOpen(false)} to={p.path} key={p.slug}>
-                {p.label}
-              </NavLink>
-            ),
-          )}
+            );
+          })}
         </nav>
         <div className="supplier-heading supplier-heading-right">
           Services and Suppliers
@@ -289,12 +328,6 @@ function Footer({ settings }) {
             </span>
             Contact Us
           </Link>
-          <Link to="/contact-us">
-            <span className="footer-bullet" aria-hidden="true">
-              •
-            </span>
-            Shopping Cart
-          </Link>
         </nav>
         <Brand settings={settings} footer />
         <address className="footer-contact">
@@ -333,7 +366,6 @@ export default function PublicLayout() {
     "subscribe",
     "subscription-thanks",
     "manage-subscription",
-    "packaging-brief",
   ].includes(slug);
   const [settings, setSettings] = useState(defaults),
     [banners, setBanners] = useState({}),
@@ -361,15 +393,12 @@ export default function PublicLayout() {
       setBanners({});
       setBannersLoading(false);
     } else {
-      // The server supports ads attached to each published CMS page.
-      // Forward the active ?page= slug when Continue changes the page.
-      const bannerQuery = new URLSearchParams({ page: slug });
+      // Home page 1 is the default advertisement set across the website.
+      // Only Home's Continue flow can request a different story-specific set.
+      const bannerQuery = new URLSearchParams({ page: "home" });
       const selectedContentPage = new URLSearchParams(search).get("page");
 
-      if (
-        selectedContentPage &&
-        ["trends", "flexibles", "rigid", "advertising"].includes(slug)
-      ) {
+      if (selectedContentPage && slug === "home") {
         bannerQuery.set("contentPage", selectedContentPage);
       }
 

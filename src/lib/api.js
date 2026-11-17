@@ -126,19 +126,13 @@ export const pages = [
     path: "/contact-us",
   },
   {
-    slug: "shopping-cart",
-    label: "Shopping Cart",
-    path: "/shopping-cart",
-    hidden: false,
-  },
-  {
     slug: "subscription-thanks",
     label: "Subscription Thank You",
     path: "/subscribe-free/thank-you",
     hidden: true,
   },
   {
-    slug: "manage-subscription",
+    slug: "manage-subscription", 
     label: "Manage Subscription",
     path: "/manage-subscription",
     hidden: true,
@@ -169,3 +163,6 @@ export function friendlyDate(value) {
       })
     : "";
 }
+
+
+

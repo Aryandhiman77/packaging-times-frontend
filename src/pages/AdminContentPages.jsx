@@ -28,7 +28,7 @@ import { api, maxImageSize } from "../lib/api.js";
 import AdminPagination from "../components/AdminPagination.jsx";
 import { TableSkeleton } from "../components/Skeletons.jsx";
 
-const categories = ["trends", "flexibles", "rigid", "advertising"];
+const categories = ["home", "trends", "flexibles", "rigid", "advertising"];
 
 const categoryLabel = (category) =>
   category[0].toUpperCase() + category.slice(1);
